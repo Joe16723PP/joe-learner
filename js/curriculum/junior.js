@@ -6,14 +6,61 @@ registerLevel({
   audience: "Developers who already practice version control, testing, and review, and who are now responsible for changes inside a living system. This is the work of the first years shipping with a team. The title on the offer letter is irrelevant.",
   prerequisites: "New graduate must-know outcomes. Gaps in the should-know track can be filled in parallel. They are not a blocker.",
   buildsOn: "New graduate taught the tools and the habits on small projects. Junior applies them inside a system the learner did not start, with real users, history, and operational consequences. The unit of work changes from a correct function to a change that behaves in production.",
-  note: "One path. Must-know lessons open Senior. Should-know lessons are marked and can be skipped. The other lessons are part of the path and do not lock the next level.",
+  note: "One path, and the project thread is one orders system. Must-know lessons open Senior. Should-know lessons are marked and can be skipped. The other lessons are part of the path and do not lock the next level. Queues and estimation are part of the gate.",
+  pace: "About 35–50 hours. This is an estimate, not a schedule.",
   canDo: [
     "Turn a vague report into a reproduced behavior, a reviewable change, and a release they know how to undo.",
     "Explain the local design of the area they touched and extend it without inventing a second pattern.",
     "Change stored data so old and new records both work during the rollout.",
     "Tell, from logs or metrics, whether their change is healthy after release, and take the first steps in an incident they caused or noticed.",
+    "Explain at-least-once delivery with a dedupe key, and estimate the next slice of work with the assumption that would change it.",
   ],
   modules: [
+    {
+      id: "3.0",
+      title: "Placement",
+      summary: "An alternate check for people who can already change a living system.",
+      why: "The gate is the work, not the number of lessons you opened.",
+      lessons: [
+        {
+          id: "3.0",
+          title: "Check this level",
+          track: "core",
+          placement: true,
+          concept: [
+            { type: "p", text: "This check is an alternate way through the gate. Completing it opens Senior. Completing every must-know lesson also opens Senior." },
+            { type: "p", text: "The must-know work is a change inside a system you did not start: a trace, a release you can undo, a data change that does not strand old rows, a signal after release, at-least-once delivery, an estimate of the next slice, and one capstone that uses them together." },
+            { type: "p", text: "The scenario is orders. If your evidence comes from another system, say how it maps. Do not check a line you cannot show." },
+          ],
+          example: {
+            title: "A release note from a real change",
+            start: "You have shipped a small change on a team. You have not used this site's orders service.",
+            steps: [
+              { t: "Map it", d: "Your change added a field. You write the expand, migrate, and contract steps you actually used, and the rollback you would still trust." },
+              { t: "The gap", d: "If you never defined a success signal, leave that line unchecked and open the observability lesson." },
+            ],
+            end: "The note is evidence from your system. The missing signal is still a lesson.",
+          },
+          exercise: {
+            prompt: "Write a one-page account of a change you shipped, or of the orders exercises, that shows the must-know outcomes. Check a line only when the page shows it.",
+            constraints: [
+              "Name the system and one user action.",
+              "Include a rollback and one signal.",
+              "A line without evidence stays unchecked.",
+            ],
+            done: "A page someone could review, with unchecked lines pointing at lessons.",
+            rubric: [
+              "I can trace one user action to the data it writes, and turn a vague report into a change with tests, a review description, and a rollback.",
+              "I can change stored data so old and new rows both work, and I can name a success signal and a failure signal for that change.",
+              "I can explain at-least-once delivery with a dedupe key, estimate the next slice with its assumption, and point at one change that combines those outcomes.",
+            ],
+            model: [
+              { type: "p", text: "A passing page traces cancel on an order, shows a KWD total fixed without rewriting billing, adds email with expand then backfill, names a log line with a request id and no coupon code, and describes a queue retry that uses the charge's idempotency key. If the page is only a list of technologies, it does not pass." },
+            ],
+          },
+        },
+      ],
+    },
     {
       id: "3.1",
       title: "Learning a codebase",
@@ -138,14 +185,14 @@ save(order):
             { type: "p", text: "After release, watch the path you changed for a defined window and say what you looked at." },
           ],
           example: {
-            title: "\"Search is broken\" becomes a review",
-            start: "A report: search returns nothing for a name the operator can see in the database. No code yet.",
+            title: "\"My order disappeared\" becomes a review",
+            start: "A report: a buyer cannot see an order the operator can see in the database. No code yet.",
             steps: [
-              { t: "Observable behavior", d: "A query for `Ada` returns the contact named `Ada`. A query for `ada` also returns it, because the bug is a case-sensitive compare. Names that truly are absent still return an empty list. That last sentence is what stays the same." },
-              { t: "Examples", d: "Normal: `Ada` finds Ada. Boundary: `ada` finds Ada. Failure: an empty query is rejected and does not scan the table." },
-              { t: "The description", d: "Behavior: case-insensitive name match. Tests: the three examples. Risk: other callers may depend on case-sensitive matches. Undo: redeploy the previous version. Watch: search error rate and a sample of queries for one hour." },
+              { t: "Observable behavior", d: "The buyer's order list includes order 41 when the stored email is `Ada@shop.test` and the session email is `ada@shop.test`. The bug is a case-sensitive compare. Orders that truly belong to someone else stay hidden. That last sentence is what stays the same." },
+              { t: "Examples", d: "Normal: an exact email match lists the order. Boundary: the same address in a different case lists it. Failure: a buyer with no orders gets an empty list, not someone else's orders." },
+              { t: "The description", d: "Behavior: case-insensitive match on the buyer email for the order list. Tests: the three examples. Risk: other lookups may depend on case-sensitive emails. Undo: redeploy the previous version. Watch: order-list errors and a sample of empty results for one hour." },
             ],
-            end: "A reviewer can verify the claim without sitting with you. The first slice does not rewrite search.",
+            end: "A reviewer can verify the claim without sitting with you. The first slice does not rewrite the order list.",
           },
           exercise: {
             prompt: "A vague report says \"the total is wrong sometimes.\" The log line is `currency=KWD unit=1.234 qty=2 total=2.460`. The code rounds the unit price to two decimals, then multiplies. KWD uses three minor digits, so the expected total is 2.468. USD totals that are already two decimals are fine. Write the reproduction, the acceptance examples, a fix plan that does not say \"rewrite billing,\" the review description, and the rollback note.",
@@ -218,31 +265,70 @@ save(order):
             { type: "p", text: "Extend a seam: a function, a module boundary, a clear interface. Copying a block starts a second pattern even when the copy is correct today." },
             { type: "p", text: "When the local pattern is harmful, say so in the review and keep the current change small. Schedule the cleanup as its own work with a reason." },
             { type: "p", text: "Read the tests as the specification the last author left. Update them when the intended behavior changes, and say so." },
+            { type: "p", text: "Generated code has to follow the same pattern. A tool that adds the column and skips the HTTP field has invented a second path, even when the snippet looks finished. Check the diff against the seam before you keep it." },
           ],
           example: {
-            title: "Nickname is the pattern",
-            start: "Profiles already have an optional nickname, implemented end to end.",
+            title: "Gift note follows delivery instructions",
+            start: "Orders already have an optional delivery instruction, implemented end to end.",
             steps: [
-              { t: "List the seam", d: "Input collects it. A check allows it to be absent and limits it when present. Storage has a nullable column. The HTTP representation includes the field on read and write. The display prints it when present." },
-              { t: "The miss a newcomer makes", d: "They add the column and the form, and they forget the HTTP field. The form submits a value the API drops. A test that writes the field and reads it back catches that." },
+              { t: "List the seam", d: "The create-order request accepts it. A check allows it to be absent and limits the length when present. Storage has a nullable column. The HTTP representation includes the field on read and write. The packing slip prints it when present." },
+              { t: "The miss a newcomer makes", d: "They add the column and the checkout field, and they forget the HTTP response. The buyer types a gift note and the order read never returns it. A test that writes the field and reads it back catches that." },
             ],
-            end: "The new field follows the same files as nickname. The test fails if any hop drops it.",
+            end: "The gift note follows the same files as the delivery instruction. The test fails if any hop drops it.",
           },
           exercise: {
-            prompt: "The profile service already implements optional nickname end to end: input, validation, a nullable column, the HTTP field, and display. Add locale by following that pattern. List every file the pattern forces you to touch. Name one step a newcomer would be likely to miss, and add a test that would catch that miss.",
+            prompt: "The orders service already implements an optional delivery instruction end to end: request field, validation, a nullable column, the HTTP read and write, and the packing slip. Add an optional gift note by following that pattern. List every place the pattern forces you to touch. Name one step a newcomer, or a generated diff, would be likely to miss, and add a test that would catch that miss.",
             constraints: [
-              "Locale stays optional, as nickname is optional, unless you have a written reason to break the pattern.",
-              "Validation can differ. Nickname's length rule does not have to be copied onto a locale code. The allowed set is the point where the pattern bends, and you should say so.",
-              "The test fails if the missed step drops the value.",
+              "The gift note stays optional, as the delivery instruction is optional, unless you have a written reason to break the pattern.",
+              "Validation can differ. A length limit does not have to be copied unchanged. Say where the pattern bends.",
+              "The test fails if the missed step drops the value. A generated diff is reviewed against the same list.",
             ],
-            done: "A list of files, one likely miss, and a test that catches it. Locale round-trips the way nickname does.",
+            done: "A list of places, one likely miss, and a test that catches it. The gift note round-trips the way the delivery instruction does.",
             rubric: [
-              "I listed every file the nickname pattern forced me to touch for locale.",
-              "I named one step a newcomer would miss.",
+              "I listed every place the delivery-instruction pattern forced me to touch for the gift note.",
+              "I named one step a newcomer or a generated diff would miss.",
               "I added a test that fails if that step is missed.",
+              "I would reject a generated diff that adds the column and skips the HTTP field.",
             ],
             model: [
-              { type: "p", text: "Touch input, validation, storage, the HTTP read and write, and display. A likely miss is the HTTP field: the form collects locale and the API never returns it. Another is treating locale as required. The test saves a profile with no locale and reads it back empty, and it rejects a code outside the allowed set. Copying nickname's length check would accept `not-a-locale` and reject a short valid code. Say that the seam is \"optional validated field,\" not \"string of length 1 to 40.\"" },
+              { type: "p", text: "Touch the request, validation, storage, the HTTP read and write, and the packing slip. A likely miss is the HTTP field: checkout collects the gift note and the order read never returns it. The test creates an order with a gift note and reads it back, and it creates one without a note and reads it back empty. Copying a 40-character limit onto a note that the product allows to be longer is a bend you name. A generated patch that only adds the column is not done." },
+            ],
+          },
+        },
+        {
+          id: "3.3b",
+          title: "Change a pattern with the tests pinned",
+          track: "core",
+          thread: "Orders",
+          concept: [
+            { type: "p", text: "Extending a pattern is the previous lesson. Changing a pattern is this one. First pin the behavior you intend to keep, with a test that passes against the current code. Then restructure. If the test fails for a reason you did not intend, the restructure is not safe yet." },
+            { type: "p", text: "The pin is the public behavior: what the caller sends and what they get back. Reaching into private helpers makes the test break when you move the code, even if the behavior held." },
+            { type: "p", text: "Keep the change small enough to review. A rewrite of the order module is not a refactor of the gift-note check. Say what behavior must stay, and what you are allowed to move." },
+          ],
+          example: {
+            title: "The length check moves, the rule stays",
+            start: "The delivery instruction is validated inside the HTTP handler. You want that check next to the other order rules. Callers must see the same accept and reject behavior.",
+            steps: [
+              { t: "Pin it", d: "A test sends a 20-character instruction and expects it stored. A second test sends 500 characters and expects rejection. Both pass before you move anything." },
+              { t: "Move it", d: "The handler calls the shared check. The tests still talk to the request, not to the old function name. They pass for the same reasons." },
+            ],
+            end: "The rule lives in one place. Callers cannot tell you moved it, except that a second copy is gone.",
+          },
+          exercise: {
+            prompt: "The gift-note length check is copied in the HTTP handler and again in the packing-slip job. Pin the current behavior with tests, then make one check that both call. Do not change what is accepted.",
+            constraints: [
+              "Write the tests against the current behavior before you move the code.",
+              "The tests use the public request and the job's input, not a private helper you are about to delete.",
+              "An empty note and a too-long note stay on the same sides of the rule as they are today.",
+            ],
+            done: "The tests passed before the move and after it. One function owns the rule. Both callers use it.",
+            rubric: [
+              "I wrote tests that passed against the current duplicated checks before I changed the structure.",
+              "After the move, those tests still pass and both callers use one check.",
+              "I did not change which notes are accepted.",
+            ],
+            model: [
+              { type: "p", text: "Today an empty note is stored and a note over the limit is rejected, in both places. Tests lock that, including a note exactly at the limit if the current code accepts it. Then `note_allowed(text)` is the only rule, and the handler and the job call it. A test that imported the old handler-local function would fail for a reason that is not a behavior change. Do not write that test." },
             ],
           },
         },
@@ -258,7 +344,7 @@ save(order):
           id: "3.4",
           title: "Data changes and migrations",
           track: "must",
-          thread: "Contact book",
+          thread: "Orders",
           concept: [
             { type: "p", text: "Expand, then migrate, then contract. Add the new field before code requires it. Backfill old rows. Remove the old path only after readers no longer need it." },
             { type: "seq", title: "A stored field, in order", items: [
@@ -271,30 +357,30 @@ save(order):
             { type: "p", text: "During the transition, the read path understands old and new rows." },
           ],
           example: {
-            title: "A nullable nickname column",
-            start: "Profiles have no nickname. You will add one. Existing rows must keep working.",
+            title: "A nullable buyer email on the order",
+            start: "Orders have a buyer id and no email. You will store the email used at checkout. Existing orders must keep working.",
             steps: [
-              { t: "Expand", d: "Add a nullable column. The read path treats absence as \"no nickname.\" The write path stores one when the request has one." },
-              { t: "Backfill, if you even need one", d: "Nicknames have no source to copy from. The backfill is \"leave null,\" and running it twice still leaves null. Do not invent nicknames." },
-              { t: "Do not contract", d: "The field is optional. There is no second step that makes it required. Contracting it would strand every old profile." },
+              { t: "Expand", d: "Add a nullable column. The order read treats absence as \"no email stored on the order.\" The write path stores one when checkout sends one." },
+              { t: "Backfill from the account", d: "Copy the account email onto orders that lack one, in batches. A second run skips orders that already have an email. Do not invent an address." },
+              { t: "Contract later", d: "Only after the check shows the remaining nulls are the ones you agreed may stay empty, such as guest orders with no address. Requiring email before that fails every old order read." },
             ],
-            end: "Old rows still read. New writes can store a nickname. Rollback of the new code leaves a column the old code ignores.",
+            end: "Old orders still read. New checkouts can store an email. Rollback of the new code leaves a column the old code ignores.",
           },
           exercise: {
-            prompt: "Plan adding email to contacts that today have only phone. Write the ordered steps, what the application does when email is absent, and the concrete failure if \"email required\" code deploys before the backfill. Include the idempotent backfill rule and one check that proves the backfill finished.",
+            prompt: "Plan adding buyer email to orders that today have only a buyer id. Write the ordered steps, what the order read does when email is absent, and the concrete failure if \"email required\" code deploys before the backfill. Include the idempotent backfill rule and one check that proves the backfill finished.",
             constraints: [
-              "Old contacts remain readable throughout the expand and migrate steps.",
+              "Old orders remain readable throughout the expand and migrate steps.",
               "The backfill is safe to run twice and does not blank an email that is already present.",
               "Name the statement that can lock a large table, and batch the backfill.",
             ],
             done: "A reader can follow the order, name the failure of requiring email too early, and say which check shows the backfill finished.",
             rubric: [
-              "The plan is expand, then backfill, then contract, and reads tolerate a missing email until the contract step.",
+              "The plan is expand, then backfill, then contract, and order reads tolerate a missing email until the contract step.",
               "I named the failure if email-required code deploys before the backfill.",
               "The backfill is safe to run twice, and one check proves it finished.",
             ],
             model: [
-              { type: "p", text: "Expand: nullable `email`, writers store it when present, readers treat absence as \"no email on file.\" Migrate: fill emails from a known source in batches. A second run skips rows that already have an email. Contract only after the check passes: count of rows still missing email equals the count you have agreed may stay empty. If required-email code ships first, loading or editing an old contact fails because the field the code demands is null. Adding a nullable column is usually the cheap step. Updating every row in one statement is the step that can lock the table." },
+              { type: "p", text: "Expand: nullable `buyer_email` on orders. Writers store it when checkout sends it. Readers treat absence as \"no email on this order.\" Migrate: copy from the account in batches. A second run skips orders that already have an email. Contract only after the check passes: the count of orders still missing email equals the guest orders you agreed may stay empty. If required-email code ships first, loading an old order fails because the field is null. Adding a nullable column is usually the cheap step. Updating every order in one statement is the step that can lock the table." },
             ],
           },
         },
@@ -310,6 +396,7 @@ save(order):
           id: "3.5a",
           title: "Contracts and compatible change",
           track: "core",
+          thread: "Orders",
           concept: [
             { type: "p", text: "A contract is what callers may rely on: fields, types, error codes, and any ordering or uniqueness promise." },
             { type: "p", text: "Adding a field is usually safe. Renaming, removing, or changing a type is a break. Breaks need a version or a period where both shapes are accepted, callers move, then the old shape is rejected." },
@@ -331,7 +418,7 @@ save(order):
             end: "The rename is real, and it has a window. Callers move before the old name is rejected.",
           },
           exercise: {
-            prompt: "Change `amount` from a decimal string to `{currency, minor_units}`. List the caller impact and a compatible sequence: accept both, migrate callers, reject the old form. State the retry rule for \"create charge.\"",
+            prompt: "On the order's create-charge call, change `amount` from a decimal string to `{currency, minor_units}`. List the caller impact and a compatible sequence: accept both, migrate callers, reject the old form. State the retry rule for creating the charge.",
             constraints: [
               "Say what breaks if you reject the string on the same day you add the object.",
               "The sequence names who moves during the middle step.",
@@ -352,6 +439,7 @@ save(order):
           id: "3.5b",
           title: "Abuses of one operation",
           track: "should",
+          thread: "Orders",
           concept: [
             { type: "p", text: "Threat-model one operation. Ask what a hostile caller can spoof, replay, or read. Write two abuses and a control for each: an owner check, a key scope, a rate limit, or an audit." },
             { type: "p", text: "This is a short list for one feature, not a full security program. Two abuses you can actually close are worth more than a catalog." },
@@ -366,7 +454,7 @@ save(order):
             end: "Two abuses, two controls, both specific to this operation.",
           },
           exercise: {
-            prompt: "For \"create charge,\" name two abuses and the control for each.",
+            prompt: "For \"create charge\" on an order, name two abuses and the control for each.",
             constraints: [
               "Use the operation from the previous lesson, including the amount change.",
               "Each control is one of: owner check, key scope, rate limit, or audit. You may use idempotency where replay is the abuse.",
@@ -380,6 +468,52 @@ save(order):
             ],
             model: [
               { type: "p", text: "Replay of the same charge: store an idempotency key with the first result. A charge against another customer's invoice: an owner check on that invoice, not only \"logged in.\" A third you do not have to use: a client-supplied amount that does not match the invoice, controlled by computing the amount on the server." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "3.9",
+      title: "Queues, events, and delivery",
+      summary: "A message can arrive more than once. The effect must not.",
+      why: "A later decision asks for at-least-once delivery and a dedupe key. Background work is no longer only a name.",
+      lessons: [
+        {
+          id: "3.9",
+          title: "Queues, events, and delivery",
+          track: "must",
+          thread: "Orders",
+          concept: [
+            { type: "p", text: "A queue holds work for later. A producer puts a message on. A consumer takes it off. The waiting-line rule from the beginner queue still applies: first in, first out, unless the system says otherwise." },
+            { type: "p", text: "An event is a fact that already happened: an order was placed, a charge succeeded. It is not a command that asks someone to please try. Consumers who care about that fact subscribe. They do not reach into the producer's tables to notice." },
+            { type: "p", text: "At-least-once delivery means the consumer may see the same message twice. A crash after the work and before the acknowledgement, or a retry from the queue, both cause a second delivery. The handler has to be safe under that. Exactly-once delivery is a property you build with a dedupe key, not a promise the queue makes for free." },
+            { type: "p", text: "The dedupe key is the same idea as the idempotency key on create-charge in [[3.5]]. Store the key with the first result. A second delivery with that key returns the first result and does not perform the effect again. A charge event whose key is the charge id must not create a second shipment." },
+          ],
+          example: {
+            title: "The shipment that ran twice",
+            start: "When a charge succeeds, the orders service publishes `charge_succeeded` with the order id. The warehouse consumer creates a shipment and then acknowledges the message.",
+            steps: [
+              { t: "The crash", d: "The shipment is created. The process dies before the acknowledgement. The queue delivers the message again." },
+              { t: "The key", d: "The consumer stores `shipment_for_charge:<charge_id>` with the first shipment id. The second delivery finds the key and does not create another shipment." },
+            ],
+            end: "The buyer gets one shipment. The queue was allowed to deliver twice. The effect was not.",
+          },
+          exercise: {
+            prompt: "An order publishes `order_placed` after the row is stored. A consumer sends the confirmation and a second consumer reserves stock. Both can see the message more than once. Write the delivery rule and the dedupe key for each consumer. Say what happens if the publish itself fails after the order row is stored.",
+            constraints: [
+              "Assume at-least-once delivery. Do not assume the queue delivers exactly once.",
+              "Each consumer has its own key. One consumer's key does not protect the other.",
+              "The failure after the row is stored is named: the event is missing, or a retry publishes it.",
+            ],
+            done: "Two keys, one sentence each for what the second delivery does, and a sentence for the failed publish.",
+            rubric: [
+              "I treated delivery as at-least-once and gave each consumer a dedupe key.",
+              "A second delivery does not send a second confirmation or reserve the stock twice.",
+              "I said what happens when the order row exists and the event was not published.",
+            ],
+            model: [
+              { type: "p", text: "Confirmation key: `confirm:<order_id>`. Stock key: `reserve:<order_id>`. The second delivery finds the key and skips the effect. If the row is stored and the publish fails, the order exists without a confirmation or a reservation. A retry of the publish, or a sweep that publishes for rows with no recorded event, closes that gap. Hoping the queue saw it is not a rule." },
             ],
           },
         },
@@ -436,7 +570,9 @@ save(order):
           thread: "Orders",
           concept: [
             { type: "p", text: "Run one query or endpoint against a realistic row count, thousands rather than five. State whether the plan is still acceptable, using the growth rules from [[1.11]] plus a measurement." },
-            { type: "p", text: "Five rows hid the nested work. A thousand rows will not." },
+            { type: "p", text: "Five rows hid the nested work. A thousand rows will not. The question is how the work grows as the order grows, not how the page felt on a sample you can count by hand." },
+            { type: "p", text: "Write the count before you time anything. One query for the order plus one query per line is linear in the number of lines. A join or a batched read stays flat for this page. The growth rule tells you which shape will hurt. The clock checks the prediction on a few hundred or a few thousand rows, the way [[2.14]] asked you to repeat a measurement before announcing a win." },
+            { type: "p", text: "Acceptable means the plan still fits the feature's use. An order page people open while packing or paying does not get to issue a query per line as its steady shape. A nightly export might tolerate more, and you say so. A cache is a later mechanism, after the shape is honest and a measurement says the honest shape is still too slow. [[4.9]] is where that decision gets its own lesson. Here you only refuse to treat five rows as evidence." },
           ],
           example: {
             title: "One query per line",
@@ -527,7 +663,8 @@ save(order):
         {
           id: "3.8a",
           title: "Slices, estimates, and a personal checklist",
-          track: "core",
+          track: "must",
+          thread: "Orders",
           concept: [
             { type: "p", text: "Break work into visible slices. Estimate the next slice, state the assumption, and revise when the assumption dies. Do not estimate a whole quarter as one number." },
             { type: "p", text: "Raise a blocker early. Include what you already tried and the decision you need." },
@@ -537,16 +674,16 @@ save(order):
           ],
           example: {
             title: "The estimate that was really a quarter",
-            start: "Someone asks how long password reset will take. The honest answer in the room is \"a quarter.\"",
+            start: "Someone asks how long \"let the buyer change the delivery address\" will take. The honest answer in the room is \"a quarter.\"",
             steps: [
-              { t: "Slice", d: "Request a reset. Redeem a token and set a password. Expire tokens. Each slice is reviewable." },
-              { t: "Estimate the next one", d: "The request slice is a few days, assuming mail delivery already exists. If that assumption dies, the estimate is revised in the open, not absorbed." },
-              { t: "A blocker", d: "`I tried the mail API in the test environment and the token is dropped. I need a decision: use the existing mail path, or is reset blocked on a new one?`" },
+              { t: "Slice", d: "Change the address before the order ships. Reject a change after it ships. Record who changed it. Each slice is reviewable." },
+              { t: "Estimate the next one", d: "The pre-ship change is a few days, assuming the order already stores an address and the ship state is reliable. If that assumption dies, the estimate is revised in the open, not absorbed." },
+              { t: "A blocker", d: "`I read the order row and the ship flag is a free-form string, not a state the lesson on status would recognize. I need a decision: treat \"shipped\" as the only closed value, or is this slice blocked on a real state?`" },
             ],
             end: "The team can see the next slice and the assumption. They are not holding a single number that meant \"sometime.\"",
           },
           exercise: {
-            prompt: "Split \"add password reset\" into reviewable slices. Mark the risky slice and the assumption that would change the estimate. Then read the two review comments below and write a five-line personal checklist. Show the checklist applied to the next slice's description.",
+            prompt: "Split \"let the buyer change the delivery address on an order\" into reviewable slices. Mark the risky slice and the assumption that would change the estimate. Then read the two review comments below and write a five-line personal checklist. Show the checklist applied to the next slice's description.",
             constraints: [
               "Each slice can be reviewed in one sitting.",
               "The checklist comes from the sample comments, not from a generic list you already had.",
@@ -558,17 +695,17 @@ save(order):
                 caption: "Sample review comments",
                 lang: "text",
                 code: `1. Rename this. I don't like the name tmp.
-2. This lets a reset token be used twice. I could not find a test that fails on the second redeem.
+2. This lets the address change after the order has shipped. I could not find a test that fails on that case.
 `,
               },
             ],
             rubric: [
-              "Password reset is split into reviewable slices, with the risky slice and the assumption marked.",
+              "Changing the delivery address is split into reviewable slices, with the risky slice and the assumption marked.",
               "The checklist has about five lines and responds to the two sample comments.",
               "I showed the checklist applied to the next slice's description.",
             ],
             model: [
-              { type: "p", text: "Slices: request a reset without revealing whether the account exists; redeem a single-use token and set the password; expire and revoke tokens. The redeem slice is the risky one. The assumption is that mail delivery already exists. Checklist: names say what the value is; a token is single-use and tested; user-facing errors do not reveal whether the account exists; the description says what was not tested; rollback is named. Applied to the redeem slice: the description stops saying \"handle the token\" and instead says \"the second redeem of the same token fails, and the test is included.\"" },
+              { type: "p", text: "Slices: change the address while the order is unshipped; reject a change once it has shipped; record who changed it. The after-ship rejection is the risky slice. The assumption is that \"shipped\" is a reliable state on the order. Checklist: names say what the value is; a shipped order cannot change address, and a test shows it; the description says what was not tested; rollback is named; the slice does not rewrite the order module. Applied to the reject slice: the description stops saying \"handle shipping\" and instead says \"a shipped order returns a conflict, and the test is included.\"" },
             ],
           },
         },
@@ -590,7 +727,7 @@ save(order):
             end: "They can start. You have not taken the keyboard, and they know when to stop and ask.",
           },
           exercise: {
-            prompt: "Write the pairing note you would send a newer teammate before they drive the easy slice of password reset. They drive. You supply context.",
+            prompt: "Write the pairing note you would send a newer teammate before they drive the easy slice of changing a delivery address: the unshipped order. They drive. You supply context.",
             constraints: [
               "Name the easy slice. Do not give them the implementation.",
               "Name the risk to watch and the point at which they should call you.",
@@ -603,7 +740,149 @@ save(order):
               "It names the risk to watch and when they should call me.",
             ],
             model: [
-              { type: "p", text: "`You'll drive the request-a-reset slice. The seam is the existing account lookup, and the tests live next to the login tests. We answer the same way whether or not the email is on file. Please don't log the token. Call me before you store a token or change the response for unknown emails. I'll review the approach when the first test is failing for the reason we want.`" },
+              { type: "p", text: "`You'll drive the unshipped-address slice. The seam is the existing order update, and the tests live next to the cancel-order tests. An unshipped order stores the new address and a shipped order is not your slice. Call me before you change the rule for what counts as shipped, or before you touch the charge. I'll review the approach when the first test is failing for the reason we want.`" },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "3.10",
+      title: "Where to specialize next",
+      summary: "This path stays general. The next depth is a choice you can name.",
+      why: "The orders work is a backend-leaning generalist path. Naming the branches keeps that from pretending to be every career.",
+      lessons: [
+        {
+          id: "3.10",
+          title: "Where to specialize next",
+          track: "core",
+          thread: "Orders",
+          concept: [
+            { type: "p", text: "This path teaches the work most software teams share: programs, history, tests, data, a change you can undo, and later an area and a direction. The scenarios are backend-leaning: a contact book, an orders service, HTTP, and SQL. That is a deliberate scope." },
+            { type: "p", text: "After Junior you can go deeper without leaving the outcomes behind. Frontend, mobile, data, site reliability, and security are specializations. Each one still needs the must-know work you just did. None of them is taught as a second curriculum here." },
+            { type: "ul", items: [
+              "Frontend: the interface, its states, and the contract it calls.",
+              "Mobile: the same contract on a device, with offline and store rules of its own.",
+              "Data: pipelines, quality, and the questions the warehouse is allowed to answer.",
+              "Site reliability: the production path, the error budget, and the on-call load.",
+              "Security: the abuse path as a practice, beyond the habits already on this path.",
+            ] },
+            { type: "p", text: "Pick from evidence. A specialization is the work you want more of, shown by a change you already enjoyed owning, not by a tool you have heard is hiring." },
+          ],
+          example: {
+            title: "The order page points two ways",
+            start: "You have traced cancel, fixed a total, and watched a failed checkout.",
+            steps: [
+              { t: "What you kept opening", d: "If you kept asking where the time went and what the alert should say, site reliability is the nearer depth. If you kept redrawing the contract the caller sees, the interface or the API is nearer." },
+              { t: "What this path still owes you", d: "Senior is still the next level on this path: own an area. A specialization does not replace that. It tells you which area you might choose." },
+            ],
+            end: "You can name a direction and still finish the path. The path does not pretend to be the direction.",
+          },
+          exercise: {
+            prompt: "From the orders work, name one specialization you would go deeper on next, and one you would not. For the one you would, name the Junior outcome that is the evidence. For the one you would not, say what this path deliberately left out.",
+            constraints: [
+              "Use the list in the concept, or name another and say what work it is.",
+              "The evidence is an exercise or a change, not a job posting.",
+              "Senior remains the next level on this path. The specialization is a depth, not a skip.",
+            ],
+            done: "Two directions, one with evidence and one with a boundary.",
+            rubric: [
+              "I named a specialization and the Junior outcome that is my evidence.",
+              "I named a specialization this path does not teach, and what it left out.",
+              "I kept Senior as the next level on this path.",
+            ],
+            model: [
+              { type: "p", text: "Evidence for site reliability: the coupon incident's first three actions and the signal that did not put the coupon code in a label. Not next: frontend, because this path never asked me to own a screen's states. Senior is still next, on the orders area, and the reliability depth is what I would choose inside it." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "3.11",
+      title: "Orders capstone",
+      summary: "One change that uses the level's must-know outcomes together.",
+      why: "Separate exercises do not show that a release, a migration, a signal, and a retried message are one change.",
+      lessons: [
+        {
+          id: "3.11",
+          title: "Ship one order change",
+          track: "must",
+          thread: "Orders",
+          concept: [
+            { type: "p", text: "This is the finished piece for the level, in the same role as the contact book at the end of Beginner. Any language is fine. The scenario is the orders service you have been reading." },
+            { type: "p", text: "The change is small enough to review in one sitting, and it still has a rollback, a data step, a signal, and a retried message that must not double-apply." },
+          ],
+          example: {
+            title: "A gift note, end to end, in miniature",
+            start: "Orders have no gift note. You will add an optional one.",
+            steps: [
+              { t: "Code", d: "A function accepts an order and a note, rejects a note that is too long, and returns the updated order. A second call with the same idempotency key returns the first result. Tests cover the long note and the retry." },
+              { t: "The release note", d: "Expand a nullable column first. Rollback is a redeploy. Old orders read with no note. The success signal is gift notes stored. The failure signal is rejected updates. The log line has the order id and not the note text." },
+            ],
+            end: "One change, one review, one way to undo it. The retry does not write a second note.",
+          },
+          exercise: {
+            prompt: "Implement a small order change in any language: the buyer can set a delivery address while the order is unshipped. Include tests, a data step for orders that have no address column yet, a rollback, one success signal and one failure signal, and a retried request that does not apply twice. Write the review description a teammate can check.",
+            constraints: [
+              "A shipped order is rejected. An unshipped order stores the address.",
+              "The retry uses a key. The second call does not write a second change.",
+              "The log line has an order id and no full address. The review description names behavior, tests, risk, and rollback.",
+            ],
+            done: "Tests pass for the happy path, the shipped order, and the retry. The review description stands alone.",
+            rubric: [
+              "The code and tests cover an unshipped change, a shipped rejection, and a retry that does not apply twice.",
+              "The data step lets old orders keep working, and the rollback is a redeploy or a stated repair.",
+              "The review description includes behavior, test evidence, risk, a rollback, and one success signal plus one failure signal.",
+            ],
+            model: [
+              { type: "p", text: "Store `{order_id, address, shipped}` and a table of idempotency keys. `set_address(order, address, key)` returns the first result when the key is known, rejects when `shipped` is true, and otherwise stores the address. Old rows with no address column are read as empty during expand. Rollback redeploys the previous version. The nullable column can stay. Success: count of address updates. Failure: count of rejected shipped updates. Log `order_id` and `error_type`, not the street. The review says the risk is a free-form shipped flag, which you treated as a boolean in this slice." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "3.12",
+      title: "Evidence for the next level",
+      summary: "What you can show, how you ask for feedback, and the case for Senior.",
+      why: "Senior is a claim that you can own an area. The evidence is a change that behaved in production, not a title.",
+      lessons: [
+        {
+          id: "3.12",
+          title: "Evidence for the next level",
+          track: "core",
+          career: true,
+          thread: "Orders",
+          concept: [
+            { type: "p", text: "Senior assumes you can ship a change, sequence a data change, and take the first steps in an incident. The evidence is the capstone or a real release, plus what you watched afterward." },
+            { type: "p", text: "Ask for feedback on the rollback and the signal. Those are the parts a reviewer can disagree with from the page alone." },
+            { type: "p", text: "The case for Senior names the area you could own next, and the outcome you would be trusted to frame. It does not ask for a title." },
+          ],
+          example: {
+            title: "The question is the rollback",
+            start: "You send the address-change capstone to someone who already owns an area.",
+            steps: [
+              { t: "The artifact", d: "The tests, the review description, and the log line." },
+              { t: "The question", d: "`If this shipped and the shipped-flag was wrong, would the rollback I named actually stop the bleeding?`" },
+            ],
+            end: "They can answer from the note. Your case is the answer and the outcomes you can repeat.",
+          },
+          exercise: {
+            prompt: "Write the note you would send with the capstone. Name two Junior must-know outcomes you can show, one that is still thin, and the question you want answered. Then write two sentences that make the case for starting Senior.",
+            constraints: [
+              "The question points at the rollback, the data step, or the signal.",
+              "The case names an area in outcomes, not a title.",
+              "A thin should-know lesson can be named without treating it as a blocked gate.",
+            ],
+            done: "A note someone could answer, and a two-sentence case.",
+            rubric: [
+              "The note names two must-know outcomes I can show and one that is still thin.",
+              "The question points at the capstone's rollback, data step, or signal.",
+              "The case for Senior is about owning an area, not a title.",
+            ],
+            model: [
+              { type: "p", text: "`The address change rejects a shipped order, the retry does not apply twice, and old orders still read. I am still thin on whether a flag was warranted. Does the rollback stop new writes without repairing old addresses?` The case: I can take a vague report through release and support on an orders path. Senior is next because the next work is framing the area, not another single ticket." },
             ],
           },
         },

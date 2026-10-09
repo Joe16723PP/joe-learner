@@ -6,14 +6,61 @@ registerLevel({
   audience: "People who can use a computer and want to learn to program. No prior coding is assumed.",
   prerequisites: "Comfort with files, a text editor, and installing software. School arithmetic and the idea of a named quantity are enough.",
   buildsOn: "There is no previous level. This is the foundation. Later levels treat these ideas as automatic and do not spend lesson time on syntax.",
-  note: "Examples in this level are Python 3. Later levels leave the language behind and teach engineering practice.",
+  note: "Examples in this level are Python 3. Later levels leave the language behind and teach engineering practice. This is a backend-leaning generalist path: small programs, then team practice, then orders and a shared checkout. A Junior lesson names where to specialize next.",
+  pace: "About 50–70 hours for a careful pass. This is an estimate, not a schedule.",
   canDo: [
     "Read and write small Python 3 programs that take input, make decisions, repeat work, and return a result.",
     "Choose a list, dictionary, set, stack, queue, tree, or graph for a small problem and explain the choice.",
     "Trace a program by hand, read a traceback, and fix simple logic bugs.",
+    "Raise and catch an exception when you have a next step, and split a small program across modules that pass records.",
     "Break a problem into functions, test the important cases, and save data in a text file.",
   ],
   modules: [
+    {
+      id: "1.0",
+      title: "Placement",
+      summary: "An alternate check for people who can already do this level.",
+      why: "An experienced learner should be able to show the outcomes without sitting every lesson first.",
+      lessons: [
+        {
+          id: "1.0",
+          title: "Check this level",
+          track: "core",
+          placement: true,
+          concept: [
+            { type: "p", text: "This check is an alternate way through the gate. Completing it opens New graduate. Completing every must-know lesson also opens New graduate. You do not need both." },
+            { type: "p", text: "Use it when you can already do the work. Checking a line you cannot show will strand you in the next level, which assumes these outcomes are fluent." },
+            { type: "p", text: "If a line is shaky, open that lesson instead. The lessons teach the work. This page only asks whether you can do it." },
+          ],
+          example: {
+            title: "One line you leave unchecked",
+            start: "You can write small Python programs. You have never caught an exception on purpose.",
+            steps: [
+              { t: "Check what you can show", d: "You check the program line and the data-structure line, because you can demonstrate both." },
+              { t: "Leave the rest", d: "You leave the exception line unchecked and open the exceptions lesson. The gate stays shut until that line is true or you finish the must-know lessons." },
+            ],
+            end: "The check matches what you can do. It is not a guess about the next level.",
+          },
+          exercise: {
+            prompt: "Show each line with a small artifact you could hand to someone else: a short program, a data-structure choice with a reason, and a file-backed program that handles one error. Check a line only when that artifact exists.",
+            constraints: [
+              "Python 3 is enough. The artifact can be tiny.",
+              "The data-structure line needs a reason, not only a name.",
+              "Leave a line unchecked when you cannot show it yet.",
+            ],
+            done: "Each checked line has an artifact. Unchecked lines point you at the lesson that teaches them.",
+            rubric: [
+              "I can write a small Python 3 program that takes input, makes a decision, repeats work, and returns a result from a function.",
+              "I can choose a list, dictionary, set, stack, queue, tree, or graph for a small problem and explain the choice.",
+              "I can read a traceback, raise and catch an exception with a next step, and save a record in a text file from more than one module.",
+            ],
+            model: [
+              { type: "p", text: "There is no single right program. A passing artifact might be a contact line parsed in one module, a total computed in another, a FileNotFoundError that starts from empty data, and a sentence that says a set was chosen because membership was the question. If you cannot produce that, the exceptions lesson and the modules lesson are the next work, and this check stays incomplete." },
+            ],
+          },
+        },
+      ],
+    },
     {
       id: "1.1",
       title: "How a program runs",
@@ -722,6 +769,97 @@ registerLevel({
       ],
     },
     {
+      id: "1.15",
+      title: "Exceptions",
+      summary: "Raise when the caller must hear about a failure, and catch only when you have a next step.",
+      why: "Later lessons ask you to raise a documented exception and to skip a bad line. Those are the same idea.",
+      lessons: [
+        {
+          id: "1.15",
+          title: "Exceptions",
+          track: "must",
+          concept: [
+            { type: "p", text: "An exception is how a function reports a failure it cannot finish. `raise` stops the function and sends the failure up the call stack. The caller either catches it or the program stops with a traceback, which [[1.13]] taught you to read." },
+            { type: "p", text: "`try` marks the code that might fail. `except SomeError` runs only when that kind of failure happens. A bare `except` hides the kind, so name the error you know how to handle." },
+            { type: "p", text: "Catch an exception when you have a next step: start from empty data, tell the user, or record the failure and continue. An empty handler deletes the evidence. If you have no next step, let it propagate." },
+            { type: "p", text: "Returning `None` for a failure is easy to ignore. Raising a documented exception forces the caller to notice. Later, invalid dates raise. They do not return `None`." },
+            { type: "pre", code: "def require_name(name):\n    if name.strip() == \"\":\n        raise ValueError(\"name is required\")\n    return name.strip()\n\ntry:\n    label = require_name(\"  \")\nexcept ValueError:\n    label = \"guest\"\n" },
+          ],
+          example: {
+            title: "A missing file becomes an empty list",
+            start: "The program should load names from a file. On the first run the file does not exist.",
+            steps: [
+              { t: "The failure", d: "Opening a missing path raises `FileNotFoundError`. That is the signal. It is not a bug in `open`." },
+              { t: "The next step", d: "Catch that one error and return an empty list. Any other error, such as a permission failure, still propagates.", code: "def load_names(path):\n    try:\n        with open(path) as f:\n            return [line.strip() for line in f if line.strip()]\n    except FileNotFoundError:\n        return []\n" },
+            ],
+            end: "A missing file starts empty. A different error still shows a traceback. The handler has a next step.",
+          },
+          exercise: {
+            prompt: "Write `parse_score(text)` that returns an `int` from 0 to 100. Raise `ValueError` when the text is not an integer or the integer is outside 0–100. Then write a caller that reads one line: on success it prints the score, and on `ValueError` it prints `Score not accepted` and does not crash.",
+            constraints: [
+              "The function raises. It does not return `None` and it does not print the error itself.",
+              "The caller catches `ValueError` only. Other exceptions still propagate.",
+              "Check 90, `abc`, -1, and 101.",
+            ],
+            done: "90 prints as a score. The other three inputs print `Score not accepted` and the program continues.",
+            rubric: [
+              "`parse_score` returns the integer for a score from 0 to 100.",
+              "It raises `ValueError` for non-integers and for numbers outside 0–100.",
+              "The caller catches that error, prints the message, and does not use an empty handler.",
+            ],
+            model: [
+              { type: "p", text: "`int(text)` itself raises `ValueError` for `abc`. Catch that inside `parse_score` only if you want one documented error, or let it propagate if the caller already handles `ValueError`. Then check the range and `raise ValueError(\"score out of range\")` for -1 and 101. The caller prints the score from the `try` and the short message from the `except`. An empty `except` would hide both cases." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "1.16",
+      title: "Imports, modules, and records",
+      summary: "More than one file, a name you import, and fields grouped into one record.",
+      why: "A later lesson splits the contact book into modules. This is the first time a program lives in more than one file.",
+      lessons: [
+        {
+          id: "1.16",
+          title: "Imports, modules, and records",
+          track: "must",
+          concept: [
+            { type: "p", text: "A module is a file of names. `import scores` lets another file use `scores.parse_score`. `from scores import parse_score` copies that one name into the current file. The file you run is the entry point. The files it imports do not run their own command loop." },
+            { type: "p", text: "Import direction is a choice you can already feel. The entry point may import the parser. The parser does not import the entry point. A cycle means each file is waiting for the other to finish loading." },
+            { type: "p", text: "A record groups the fields of one thing. A dictionary with known keys is enough: `{\"name\": \"Ada\", \"phone\": \"555\"}`. A loose pair of parallel lists, one of names and one of phones, falls out of step the first time you insert in the wrong place." },
+            { type: "p", text: "Pass the record into a function. Do not make the function reach back into the other module's variables. The caller can see the inputs." },
+          ],
+          example: {
+            title: "A contact leaves the command loop",
+            start: "One file both reads lines and decides whether a phone is valid. You are about to add a second command and the file is already hard to follow.",
+            steps: [
+              { t: "A record", d: "A contact is `{\"name\": name, \"phone\": phone}`. Functions take that dictionary, not two unrelated arguments that might be swapped." },
+              { t: "A second file", d: "`records.py` defines `parse_contact(line)` and `format_contact(contact)`. `book.py` imports them and owns the command loop. `records.py` does not import `book.py`.", code: "def parse_contact(line):\n    name, sep, phone = line.partition(\"\\t\")\n    if sep != \"\\t\" or name == \"\":\n        raise ValueError(\"bad contact line\")\n    return {\"name\": name, \"phone\": phone}\n" },
+            ],
+            end: "The command loop asks for a contact. The record module knows the fields. Neither file reaches into the other's locals.",
+          },
+          exercise: {
+            prompt: "Split a tiny contact helper into two files. `records.py` provides `make_contact(name, phone)` returning a dictionary and `label(contact)` returning `name: phone`. `book.py` imports them, builds one contact from input, and prints the label. `records.py` does not import `book.py`.",
+            constraints: [
+              "The contact is one dictionary, not two parallel lists.",
+              "`make_contact` raises `ValueError` when the name is blank or the phone contains a letter.",
+              "Run `book.py`. Running `records.py` alone prints nothing.",
+            ],
+            done: "`book.py` prints one label. A blank name raises `ValueError` from the records module. The import arrow points from the command file toward the records file.",
+            rubric: [
+              "`make_contact` returns a dictionary with name and phone, and raises `ValueError` for a blank name or a phone with a letter.",
+              "`book.py` imports the records module and is the only file that reads input and prints.",
+              "`records.py` does not import `book.py`.",
+            ],
+            model: [
+              { type: "p", text: "`make_contact` checks the name and that every character of the phone is a digit, a space, or `+`, then returns the dictionary. `label` reads those two keys. `book.py` calls both and prints. If `records.py` imported `book.py`, loading either file would cycle. The entry point is the only place that calls `input`." },
+            ],
+          },
+        },
+      ],
+    },
+    {
       id: "1.14",
       title: "Text files and a finished program",
       summary: "Data that outlives one run, and a contact book that uses the level.",
@@ -733,7 +871,7 @@ registerLevel({
           track: "must",
           thread: "Contact book",
           concept: [
-            { type: "p", text: "A file outlives one run. Open it, read or write, and always close it. `with open(path) as f` closes the file even when an error happens." },
+            { type: "p", text: "A file outlives one run. Open it, read or write, and always close it. `with open(path) as f` closes the file even when an error happens. A missing file is the `FileNotFoundError` you already catch in [[1.15]]. A contact is the record from [[1.16]], not two lists that can drift apart." },
             { type: "p", text: "One record per line. Split fields with a delimiter you chose and can describe. Reject a line that does not have the fields you expect. Skipping it silently, with a count you show the user, is a reasonable policy when the file is data you own. Hiding the count is not." },
             { type: "p", text: "A missing file is a case to handle (`FileNotFoundError`), usually by starting from empty data or telling the user the path." },
             { type: "p", text: "Before coding a whole program, write one sentence for the job, a list of commands, the data structure, and the functions. Write the function list before the command loop." },
@@ -754,7 +892,7 @@ registerLevel({
             prompt: "Build a command-line contact book. Commands: `add NAME PHONE`, `find NAME`, `list`, `quit`. Store contacts in a dictionary keyed by name. Reject a duplicate name with a message. Reject a phone that is not made of digits, spaces, and `+`. On startup, load `contacts.txt` if it exists. On add, rewrite the file. If a line is malformed, skip it, count it, and after loading tell the user how many lines were skipped.",
             constraints: [
               "Before coding, write one sentence for the job, the commands, the data structure, and the function list.",
-              "Isolate `parse` of a line, `format` of a line, `load`, `save`, `add`, and `find`. The command loop calls them and is the only place that prints menu text.",
+              "Isolate `parse` of a line, `format` of a line, `load`, `save`, `add`, and `find`. Put parse and format in a second module. The command loop calls them and is the only place that prints menu text.",
               "Manual tests: one normal session, one empty start, and one bad line in the file.",
             ],
             done: "A contact added in one run is found in the next run. A duplicate name and a phone with a letter are rejected. A malformed line is skipped and the skip count is shown after loading.",
@@ -764,7 +902,52 @@ registerLevel({
               "A missing file starts empty, a malformed line is skipped and counted, and I ran the three manual sessions.",
             ],
             model: [
-              { type: "p", text: "A workable line format is the name, a tab, and the phone. `parse` returns nothing for a line that does not split into those two fields, and `load` counts those lines. `add` checks the name and the phone before it updates the dictionary or the file. `find` returns the phone or reports that the name is missing, and the loop prints that result. The model is the shape, not a full program you should paste over your own." },
+              { type: "p", text: "A workable line format is the name, a tab, and the phone. `parse` raises `ValueError` or returns nothing for a line that does not split into those two fields, and `load` counts those lines inside `except` or after the failed parse. `add` checks the name and the phone before it updates the dictionary or the file. `find` returns the phone or reports that the name is missing, and the loop prints that result. The model is the shape, not a full program you should paste over your own." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "1.17",
+      title: "Evidence for the next level",
+      summary: "What you can show, how you ask for feedback, and the case for New graduate.",
+      why: "Moving on is a claim about outcomes. A title does not carry the claim.",
+      lessons: [
+        {
+          id: "1.17",
+          title: "Evidence for the next level",
+          track: "core",
+          career: true,
+          concept: [
+            { type: "p", text: "The next level asks you to work on a team: history, other people's code, tests, and review. The evidence is work you can point at, not a title and not hours spent." },
+            { type: "p", text: "Ask for feedback on a specific artifact. \"How do I get better?\" is hard to answer. \"Does this contact book still load after a bad line?\" is a question with an object." },
+            { type: "p", text: "The case for New graduate is the Beginner outcomes: a small program, a justified data structure, a traceback you can read, and a program that remembers its data. Say which of those you can show, and which lesson is still open." },
+          ],
+          example: {
+            title: "A question with the program attached",
+            start: "You want a friend who already works on a team to look at the contact book.",
+            steps: [
+              { t: "The artifact", d: "Send the two files and the three manual sessions: a normal run, an empty start, and a bad line." },
+              { t: "The question", d: "`Can you load this and tell me whether the bad line is skipped and counted? I am not asking for a job title. I want to know if this is the outcome the next level assumes.`" },
+            ],
+            end: "They can answer from the program. You can act on the answer.",
+          },
+          exercise: {
+            prompt: "Write a short note you could send with your contact book. Name two Beginner outcomes you can show, one outcome that is still thin, and the question you want answered. Then write two sentences that make the case for starting New graduate, using outcomes rather than a title.",
+            constraints: [
+              "Attach the claim to the contact book or another program you wrote in this level.",
+              "The question names a behavior the reader can check.",
+              "The case does not say you are ready because of time spent or a job title.",
+            ],
+            done: "A note someone could answer, and a two-sentence case tied to outcomes.",
+            rubric: [
+              "The note names two outcomes I can show and one that is still thin.",
+              "The question points at a behavior in a program I wrote.",
+              "The case for New graduate is about outcomes, not a title.",
+            ],
+            model: [
+              { type: "p", text: "`The contact book loads, rejects a bad phone, and skips a malformed line with a count. I can explain why the contacts are a dictionary. I am still thin on catching only the error I expect. Can you run the bad-line session and tell me if the count is honest?` The case: I can write a small program that remembers its data and explain the data structure. New graduate is the next work because those outcomes are the ones it assumes, and the thin one is a lesson I can name." },
             ],
           },
         },

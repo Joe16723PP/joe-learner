@@ -543,6 +543,11 @@ h1 {
   background: var(--should-bg);
 }
 
+.badge-place {
+  color: var(--ink);
+  background: var(--bg-2);
+}
+
 .thread {
   color: var(--muted);
   font-size: 0.92rem;

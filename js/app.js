@@ -46,11 +46,21 @@ function isLessonComplete(lesson) {
   return rubric.every((_, i) => Boolean(marks[i]));
 }
 
+function placementLesson(level) {
+  return lessonsIn(level).find((lesson) => lesson.placement);
+}
+
+function levelGateMet(level) {
+  const placement = placementLesson(level);
+  if (placement && isLessonComplete(placement)) return true;
+  return mustLessons(level).every(isLessonComplete);
+}
+
 function isLevelUnlocked(level) {
   const i = LEVELS.findIndex((item) => item.id === level.id);
   if (i <= 0) return true;
   const prev = LEVELS[i - 1];
-  return isLevelUnlocked(prev) && mustLessons(prev).every(isLessonComplete);
+  return isLevelUnlocked(prev) && levelGateMet(prev);
 }
 
 function canRead(level) {
@@ -195,7 +205,7 @@ function focusLevel() {
   for (const level of LEVELS) {
     if (!isLevelUnlocked(level)) break;
     current = level;
-    if (mustLessons(level).some((lesson) => !isLessonComplete(lesson))) return level;
+    if (!levelGateMet(level)) return level;
   }
   return current;
 }
@@ -237,12 +247,13 @@ function levelFromRoute(route) {
   return null;
 }
 
-function badge(track, level) {
-  const hasOptional = lessonsIn(level).some((lesson) => lesson.track !== "must");
-  if (!hasOptional) return "";
-  if (track === "must") return `<span class="badge badge-must">Must-know</span>`;
-  if (track === "should") return `<span class="badge badge-should">Should-know</span>`;
-  return "";
+function badge(track, level, lesson) {
+  const hasOptional = lessonsIn(level).some((item) => item.track !== "must");
+  const parts = [];
+  if (hasOptional && track === "must") parts.push(`<span class="badge badge-must">Must-know</span>`);
+  else if (hasOptional && track === "should") parts.push(`<span class="badge badge-should">Should-know</span>`);
+  if (lesson && lesson.placement) parts.push(`<span class="badge badge-place">Placement</span>`);
+  return parts.join(" ");
 }
 
 function blocksToHtml(blocks) {
@@ -305,8 +316,11 @@ function filesToHtml(files, key) {
 }
 
 function assumesLine(mod) {
-  if (mod.prevId) {
-    const prev = index.modules.get(mod.prevId);
+  let prev = mod.prevId ? index.modules.get(mod.prevId) : null;
+  while (prev && prev.lessons.every((lesson) => lesson.placement)) {
+    prev = prev.prevId ? index.modules.get(prev.prevId) : null;
+  }
+  if (prev) {
     return `Assumes <a href="#/module/${encodeURIComponent(prev.id)}">${esc(prev.title)}</a>.`;
   }
   const level = levelById(mod.levelId);
@@ -324,8 +338,10 @@ function renderHome() {
     const open = isLevelUnlocked(level);
     const must = mustLessons(level);
     const done = must.filter(isLessonComplete).length;
+    const placed = Boolean(placementLesson(level) && isLessonComplete(placementLesson(level)));
     let stateLabel = "Closed";
     if (open && done === must.length) stateLabel = "Must-know done";
+    else if (open && placed) stateLabel = "Gate open";
     else if (open && done > 0) stateLabel = `${done} of ${must.length} must-know`;
     else if (open) stateLabel = "Open";
     return `<li class="station" style="--hue:${HUES[level.id][resolvedTheme()]}">
@@ -343,7 +359,7 @@ function renderHome() {
       <div>
         <p class="kicker">A teaching path</p>
         <h1>From first programs to technical leadership.</h1>
-        <p class="lede">Levels describe the work, not a job title. Each one assumes the previous outcomes are fluent, so later lessons do not re-teach them. The next level stays closed until the must-know exercises of this one are done.</p>
+        <p class="lede">Levels describe the work, not a job title. Each one assumes the previous outcomes are fluent, so later lessons do not re-teach them. The next level stays closed until the must-know exercises of this one are done. The path is a backend-leaning generalist path: programs, then team practice, then orders and a shared checkout.</p>
         <div class="hero-actions">
           <a class="button" href="#/lesson/${encodeURIComponent(resume.id)}">${esc(resumeLabel)}</a>
           <a class="quiet" href="#how">How the levels fit</a>
@@ -389,16 +405,21 @@ function renderLevel(level) {
   const must = mustLessons(level);
   const done = must.filter(isLessonComplete).length;
   const hasShould = lessonsIn(level).some((lesson) => lesson.track === "should");
-  const hasCore = lessonsIn(level).some((lesson) => lesson.track === "core");
+  const hasCore = lessonsIn(level).some((lesson) => lesson.track === "core" && !lesson.placement && !lesson.career);
+  const hasPlacement = Boolean(placementLesson(level));
   const next = LEVELS[level.order + 1];
+  const alternate = hasPlacement ? " The placement check is an alternate way through the gate." : "";
   const gateCopy = next
-    ? `${esc(next.title)} opens when these must-know exercises are done (${done} of ${must.length}).`
-    : `These exercises finish the level (${done} of ${must.length}).`;
+    ? `${esc(next.title)} opens when these must-know exercises are done (${done} of ${must.length}).${alternate}`
+    : `These exercises finish the level (${done} of ${must.length}).${alternate}`;
+  const meter = levelGateMet(level) ? 100 : must.length ? Math.round((done / must.length) * 100) : 0;
 
+  const paceFact = level.pace ? `<div><dt>Pace</dt><dd>${esc(level.pace)}</dd></div>` : "";
   const facts = `<dl class="facts">
     <div><dt>Who it is for</dt><dd>${esc(level.audience)}</dd></div>
     <div><dt>Prerequisites</dt><dd>${esc(level.prerequisites)}</dd></div>
     <div><dt>How it builds</dt><dd>${esc(level.buildsOn)}</dd></div>
+    ${paceFact}
   </dl>`;
 
   const outcomes = `<h2>What you can do when you finish</h2><ul>${level.canDo
@@ -407,23 +428,31 @@ function renderLevel(level) {
 
   let modulesHtml = "";
   if (hasShould && !hasCore) {
-    modulesHtml = `${trackSection(level, "must", "Must-know", "The default path. This is the gate.")}${trackSection(
+    const side = level.modules.filter((mod) => mod.lessons.some((lesson) => lesson.placement || lesson.career));
+    const sideHtml = side.length
+      ? `<h2>Also on this level</h2><p>The placement check is an alternate way through the gate. The evidence lesson does not lock the next level.</p>${moduleList(side)}`
+      : "";
+    modulesHtml = `<p>${gateCopy}</p>${trackSection(level, "must", "Must-know", "The default path. This is the gate.")}${trackSection(
       level,
       "should",
       "Should-know",
       "Visible, and not required to finish the level.",
-    )}`;
+    )}${sideHtml}`;
   } else {
-    modulesHtml = `<h2>Modules</h2><p>${gateCopy} ${
-      hasShould ? "Should-know lessons are marked and can be skipped." : "Every exercise in this level is part of the gate."
-    }</p>${moduleList(level.modules)}`;
+    const hasNonMust = lessonsIn(level).some((lesson) => lesson.track !== "must");
+    const optionalCopy = hasShould
+      ? "Should-know lessons are marked and can be skipped."
+      : hasNonMust
+        ? "Lessons without a must-know badge are part of the path and do not lock the next level."
+        : "Every exercise in this level is part of the gate.";
+    modulesHtml = `<h2>Modules</h2><p>${gateCopy} ${optionalCopy}</p>${moduleList(level.modules)}`;
   }
 
   return `<article class="level measure">
     <p class="kicker">Level ${esc(level.num)}</p>
     <h1>${esc(level.title)}</h1>
     <p class="lede">${esc(level.promise)}</p>
-    <div class="meter" aria-hidden="true"><span style="--p:${must.length ? Math.round((done / must.length) * 100) : 0}%"></span></div>
+    <div class="meter" aria-hidden="true"><span style="--p:${meter}%"></span></div>
     <p>${esc(level.note || "")}</p>
     ${facts}
     ${outcomes}
@@ -449,6 +478,7 @@ function moduleList(modules, onlyTrack) {
                 return `<li><a href="#/lesson/${encodeURIComponent(lesson.id)}">${esc(lesson.title)}</a> ${badge(
                   lesson.track,
                   level,
+                  lesson,
                 )} <span class="status-word">${esc(statusWord(lesson))}</span></li>`;
               })
               .join("")}</ul>`
@@ -457,7 +487,7 @@ function moduleList(modules, onlyTrack) {
       const href = primary ? `#/lesson/${encodeURIComponent(primary.id)}` : `#/module/${encodeURIComponent(mod.id)}`;
       const mark = primary ? statusWord(primary) : moduleStatus(mod) === "done" ? "Done" : moduleStatus(mod) === "partial" ? "In progress" : "Not started";
       const level = levelById(mod.levelId);
-      const trackBadge = primary ? badge(primary.track, level) : "";
+      const trackBadge = primary ? badge(primary.track, level, primary) : "";
       return `<li><a class="mod" href="${href}"><span class="mod-id">${esc(mod.id)}</span><span><strong>${esc(
         mod.title,
       )}</strong><small>${esc(mod.summary)}</small></span><span class="status-word">${trackBadge} ${esc(mark)}</span></a>${extra}</li>`;
@@ -477,13 +507,14 @@ function renderModule(mod) {
       )}</span><span><strong>${esc(lesson.title)}</strong></span><span class="status-word">${badge(
         lesson.track,
         level,
+        lesson,
       )} ${esc(statusWord(lesson))}</span></a></li>`,
     )
     .join("");
   return `<article class="module measure">
     ${crumbs(level, mod)}
     <h1>${esc(mod.title)}</h1>
-    <p class="meta">${badge(mod.lessons.length === 1 ? mod.lessons[0].track : "", level)} <span>${assumesLine(mod)}</span></p>
+    <p class="meta">${badge(mod.lessons.length === 1 ? mod.lessons[0].track : "", level, mod.lessons.length === 1 ? mod.lessons[0] : null)} <span>${assumesLine(mod)}</span></p>
     <aside class="callout"><h3>Why it matters</h3><p>${rich(mod.why)}</p></aside>
     <h2>Lessons</h2>
     <ol class="module-list">${lessonItems}</ol>
@@ -528,7 +559,7 @@ function renderLesson(lesson) {
     ${crumbs(level, mod, lesson)}
     <p class="kicker">${esc(level.title)}</p>
     <h1>${esc(lesson.title)}</h1>
-    <p class="meta">${badge(lesson.track, level)} ${lesson.thread ? `<span class="thread">Project thread · ${esc(lesson.thread)}</span>` : ""} <span>${assumesLine(
+    <p class="meta">${badge(lesson.track, level, lesson)} ${lesson.thread ? `<span class="thread">Project thread · ${esc(lesson.thread)}</span>` : ""} <span>${assumesLine(
       mod,
     )}</span> <span class="status-word">${esc(statusWord(lesson))}</span></p>
     ${ahead}

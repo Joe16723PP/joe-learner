@@ -6,7 +6,8 @@ registerLevel({
   audience: "People who already operate as seniors and now steer several engineers or several systems. Staff-level individual contributors and engineering managers both belong here, in different mixes. The curriculum is the technical leadership work: direction, decisions, boundaries, and delivery. It is not a people-management handbook and not one vendor's career framework.",
   prerequisites: "Senior outcomes. You have owned an area through design, a painful incident, and real mentoring, not only through a design document.",
   buildsOn: "Senior scope is an area and the people who touch it. Technical-leader scope is direction across areas: which problems deserve the organization's engineering attention, and how the group stays able to deliver. The unit of work becomes the bet and the boundary.",
-  note: "One path. Must-know lessons are the gate for finishing this level. Should-know lessons are marked and can be skipped. The scenario throughout is one checkout used by three product teams.",
+  note: "One path. Must-know lessons are the gate for finishing this level. Should-know lessons are marked and can be skipped. The scenario throughout is one checkout used by three product teams. This level does not teach people management. Feedback conversations, performance reviews, and onboarding are out of scope. Learn those in a management practice, not here.",
+  pace: "About 25–35 hours. This is an estimate, not a schedule.",
   canDo: [
     "Publish a strategy with a few bets, explicit non-goals, and a way to tell that a bet is failing.",
     "Put features, migrations, and reliability work on one ordered list, and say what slips when something new jumps the queue.",
@@ -15,6 +16,51 @@ registerLevel({
     "Run incident leadership and grow other people who can set direction when you are absent.",
   ],
   modules: [
+    {
+      id: "5.0",
+      title: "Placement",
+      summary: "An alternate check for people who can already set direction.",
+      why: "The gate is the bets and the boundaries, not a tour of the lessons.",
+      lessons: [
+        {
+          id: "5.0",
+          title: "Check this level",
+          track: "core",
+          placement: true,
+          concept: [
+            { type: "p", text: "This check is an alternate way to finish the level. Completing it finishes the gate. Completing every must-know lesson also finishes the gate." },
+            { type: "p", text: "The must-know work is a strategy with kill criteria, a cross-team decision, a boundary with an owner, incident leadership, a bench that can make a class of decision without you, and a capstone that uses them on one checkout." },
+            { type: "p", text: "People management is not in the check. Feedback, performance conversations, and onboarding are out of scope on purpose." },
+          ],
+          example: {
+            title: "A strategy you already published",
+            start: "You have a written bet and a decision record from a real group. You have not used this checkout scenario.",
+            steps: [
+              { t: "Map it", d: "Name the bet, the non-goal, the kill criterion, and the owner of one shared behavior." },
+              { t: "The gap", d: "If nobody else can make a class of decision while you are away, leave that line unchecked." },
+            ],
+            end: "The documents are evidence. The missing bench is still the lesson.",
+          },
+          exercise: {
+            prompt: "Write a short account of direction you have set, or of this checkout. Check a line only when the account shows it.",
+            constraints: [
+              "Include a kill criterion and a revisit condition.",
+              "Include an incident action that is not a rewrite.",
+              "A line without evidence stays unchecked.",
+            ],
+            done: "An account someone could review, with unchecked lines pointing at lessons.",
+            rubric: [
+              "I can publish a strategy with bets, non-goals, and a way to tell a bet is failing.",
+              "I can record a cross-team decision with an owner and a revisit, and give a production behavior one owner.",
+              "I can lead an incident without starting a rewrite, and name someone else who can make a class of decision I used to make alone.",
+            ],
+            model: [
+              { type: "p", text: "A passing account has three bets and a kill criterion, a schema decision with a migration window and a date to check callers, one owner for tax, an incident checklist that refuses a weekend rewrite, and a named person who can approve an ordinary tax exception. A vision statement with no kill criterion does not pass." },
+            ],
+          },
+        },
+      ],
+    },
     {
       id: "5.1",
       title: "Strategy and bets",
@@ -66,6 +112,9 @@ registerLevel({
           thread: "Checkout",
           concept: [
             { type: "p", text: "External constraints include compliance duties, contractual uptime, and support windows you already promised. A bet that violates one of these is not available, even if the architecture would be cleaner." },
+            { type: "p", text: "A promise already sold is not a preference. 99.9 percent of payment attempts completing, measured monthly, is a number with a definition. A rewrite that puts that number at risk this quarter is not a bold bet. It is a bet you cannot make. The same is true of a support window you already staff for one region. A design that assumes follow-the-sun coverage is asking for people you did not promise and do not have." },
+            { type: "p", text: "Name the constraint before you fall in love with the architecture. Write the sentence a stakeholder would recognize as the thing they bought. Then show the bet before the constraint and the bet after it. Cleaner is not the test. Available is the test." },
+            { type: "p", text: "Some constraints can be renegotiated. Until they are, they bind. Put the renegotiation on the list as its own decision, with an owner, rather than quietly designing as if the promise had already moved." },
           ],
           example: {
             title: "The rewrite that misses a promise",
@@ -147,6 +196,9 @@ registerLevel({
           thread: "Checkout",
           concept: [
             { type: "p", text: "A one-page portfolio. Rough cost in people-weeks or on-call load for four buckets: running the current system, changing it for users, paying down a named debt, and platform work. The numbers can be coarse. They must be defined." },
+            { type: "p", text: "Define each bucket in a sentence before you put a number on it. Run is the work that keeps the current promise: on-call, the payment path, the fixes that stop a known bleed. Change is what a buyer or an operator can see. Debt is a named trap from [[4.16]], such as the tax module two teams edit. Platform is work that shortens a measured path for a named team. A platform with no team waiting on it is not in this bucket. It is a hobby, and hobbies do not get a number here." },
+            { type: "p", text: "The numbers are people-weeks or on-call load. Say which. Half of Checkout's weeks on run is a coarse claim you can argue with. \"A lot\" is not. The four numbers should be discussable against the headcount you actually have. If they add up to more people than exist, the portfolio is a wish and the strategy is already broken." },
+            { type: "p", text: "Put the migration in a bucket on purpose. Tax ownership is debt if it pays down a trap. It is platform only if a named product outcome is blocked on the contract. The argument starts with the definition, then the number. [[5.2]] holds the ordered list. This page is the cost behind that list." },
           ],
           example: {
             title: "Four numbers that add up",
@@ -338,6 +390,7 @@ registerLevel({
             { type: "p", text: "Staff so ownership survives vacation and resignation. A single expert on a critical path is a risk." },
             { type: "p", text: "Promotion and role evidence comes from observed scope: problems solved, people unblocked, decisions that held up. Hours and heroics are weak evidence." },
             { type: "p", text: "Managers and senior individual contributors multiply differently. One builds the people system. The other sets technical direction. Staff the work you actually need. Do not force one mold." },
+            { type: "p", text: "This lesson does not teach the people system. Feedback conversations, performance reviews, and onboarding are out of scope. They are real work, and they are learned in a management practice. What belongs here is the technical bench: a class of decision that still ships when you are not in the room. If the role you need is the people system, say so and go learn that elsewhere. Do not pretend a strategy note covered it." },
           ],
           example: {
             title: "The decision that only you make",
@@ -374,6 +427,9 @@ registerLevel({
           thread: "Checkout",
           concept: [
             { type: "p", text: "Hiring is a design problem. Name the missing signal, for example \"has owned a migration\" or \"can run a blameless review,\" then sketch a loop that can observe it: a work sample, a panel, and a debrief that compares evidence rather than charisma." },
+            { type: "p", text: "The signal is a piece of the bench you do not have. \"Smart\" and \"culture fit\" are not signals. \"Has taken a status field through expand, migrate, and contract\" is a signal, because you can watch it. The loop exists to produce evidence of that signal. A puzzle that never touches the work will hire for the puzzle." },
+            { type: "p", text: "A work sample is a short version of the real artifact: an incident note, a migration plan, a decision record. A panel watches the work, not a performance of confidence. The debrief compares what each person saw against the signal. Disagreement is useful. An average of how much people liked the candidate is not." },
+            { type: "p", text: "This is still not a people-management lesson. It does not cover an offer, a compensation band, or a first week. It covers how you would notice the technical gap you named in [[5.6]]. If the missing signal is \"can run a hard feedback conversation,\" that signal is out of scope for this path, and you should say so instead of inventing a loop that pretends otherwise." },
           ],
           example: {
             title: "The interview that never saw the work",
@@ -473,6 +529,7 @@ registerLevel({
             { type: "p", text: "Reward the strategy you stated. If you praise midnight heroics and ask for reliability, you will get midnight heroics." },
             { type: "p", text: "Teach taste by the decisions you approve: clarity, reversibility, and evidence." },
             { type: "p", text: "Leave the group more able than you found it: owners in place, bets written down, and fewer critical paths through one person." },
+            { type: "p", text: "Set a team policy for generated code, in the same spirit as the other standards. A tool may draft. A human still traces, tests, and explains the change in review. Secrets and personal data stay out of prompts. A migration, a charge, or an authorization check is not accepted because the diff was fast. The policy is short, and it names the failure it prevents: a second pattern, a leaked token, or a change nobody can roll back. Praise the review that caught those. Do not praise the volume of generated lines." },
           ],
           example: {
             title: "A wait the leader was causing",
@@ -495,9 +552,100 @@ registerLevel({
               "I mapped the waits and wrote a policy that shortens the longest one I control, including what I will stop doing.",
               "I named three behaviors I will praise, tied to the situations.",
               "I named three behaviors I will stop rewarding, including midnight heroics as the path and a humiliating review.",
+              "I can state the team policy for generated code: what it may draft, what a human still traces and tests, and what must not be pasted.",
             ],
             model: [
-              { type: "p", text: "Suppose review is the long wait. Policy: design risk is reviewed before the branch grows, within one working day, and you stop holding reviews for a weekly meeting. Praise: the quiet tax migration that merged in slices; a review comment that named a failure mode and left the author able to respond; an incident note in plain language. Stop rewarding: the midnight fix that skipped the rollback note; the rewrite branch that sat for a month; the review that mocked the author. Taste, in the decisions you approve, is clarity, reversibility, and evidence. The group is more able if the tax owner and the charge-path owner can decide without you, the bets are written, and the retry bug is not a path through one person." },
+              { type: "p", text: "Suppose review is the long wait. Policy: design risk is reviewed before the branch grows, within one working day, and you stop holding reviews for a weekly meeting. Praise: the quiet tax migration that merged in slices; a review comment that named a failure mode and left the author able to respond; an incident note in plain language. Stop rewarding: the midnight fix that skipped the rollback note; the rewrite branch that sat for a month; the review that mocked the author. Taste, in the decisions you approve, is clarity, reversibility, and evidence. The group is more able if the tax owner and the charge-path owner can decide without you, the bets are written, and the retry bug is not a path through one person. Generated code may draft a diff. A human traces it, tests it, and keeps tokens out of the prompt. A charge or a migration is not accepted for being fast." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "5.9",
+      title: "Checkout capstone",
+      summary: "One direction that uses the level's must-know outcomes together.",
+      why: "Separate notes do not show that a bet, a decision, a boundary, and an incident are one leadership act.",
+      lessons: [
+        {
+          id: "5.9",
+          title: "Set direction for checkout",
+          track: "must",
+          thread: "Checkout",
+          concept: [
+            { type: "p", text: "This is the finished piece for the level. The scenario is the checkout used by Shop, Subscriptions, and Point of sale. Eighteen engineers, flat headcount, a two-quarter horizon, and a payment-completion promise." },
+            { type: "p", text: "The artifact is written. It also includes one small function, in any language: the dedupe key for a charge event, so the delivery rule is concrete and not only a slogan." },
+          ],
+          example: {
+            title: "Four pages, one function",
+            start: "Last month a retry duplicated charges. Tax is edited by two teams.",
+            steps: [
+              { t: "The packet", d: "A strategy with three bets and kill criteria. A decision record for the charge event. One owner for tax, and what the other team gives up. An incident action for this week that is not a rewrite." },
+              { t: "The function", d: "`dedupe_key(event)` returns `charge:<charge_id>`. A second delivery with that key does not charge again. The function is the bench's shared rule, not a private trick." },
+            ],
+            end: "Someone absent from the room can see the bets, the owner, and the key.",
+          },
+          exercise: {
+            prompt: "Write the capstone for this checkout: a strategy with kill criteria, a cross-team decision on the order-placed or charge event, a boundary for tax, an incident action for the duplicate-charge failure, and who makes the next ordinary tax decision without you. Include a dedupe-key function in any language, and the team policy for generated code in a short paragraph.",
+            constraints: [
+              "Headcount stays flat. The payment promise is a constraint.",
+              "The decision has an owner, an alternative you rejected, and a revisit date.",
+              "The incident action this week is not a weekend rewrite. The function makes a second delivery safe.",
+            ],
+            done: "A packet a staff engineer and a manager could both use, plus the function.",
+            rubric: [
+              "The strategy has a few bets, non-goals, and a kill criterion for each bet I kept.",
+              "The decision record names an owner, an alternative, a migration window, and a date to check whether callers moved.",
+              "Tax has one owner or a contract, the incident action this week is not a rewrite, someone else can make the next ordinary tax decision, and the dedupe function stops a second charge.",
+            ],
+            model: [
+              { type: "p", text: "Bets: stop duplicate charges, one owner for tax, shorten one measured wait. Non-goal: a checkout rewrite. Kill a bet if the milestone's evidence is missing at the review. Decision: the charge event carries `charge_id` and is at-least-once. Checkout owns the schema. Reject a shared editable module. Revisit in six weeks by counting old callers. Tax: Finance owns the rate rules. Checkout gives up editing them and calls the contract. This week: stop the bleeding by making the retry use the key, and do not start a rewrite. The next ordinary rate change is Finance's, with Checkout reviewing only a contract break. `dedupe_key` returns `charge:` plus the id. Generated drafts are allowed. Tokens and card numbers are not pasted. A human traces the charge path." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "5.10",
+      title: "Evidence for what you do next",
+      summary: "What you can show, how you ask for feedback, and the case for the work after this path.",
+      why: "The path ends. The next scope is still a claim about outcomes, and it may be a depth this path does not teach.",
+      lessons: [
+        {
+          id: "5.10",
+          title: "Evidence for what you do next",
+          track: "core",
+          career: true,
+          thread: "Checkout",
+          concept: [
+            { type: "p", text: "There is no next level on this path. The case you make is for a scope: a wider technical direction, or a people system this curriculum left out, or a specialization you named after Junior." },
+            { type: "p", text: "Ask for feedback on a decision that held while you were away, and on a bet you killed. Those are the artifacts. A question about executive presence is not one this path can answer." },
+            { type: "p", text: "If the work you want next is feedback, performance conversations, or onboarding, say that plainly and go learn it outside this path. The capstone does not substitute for it." },
+          ],
+          example: {
+            title: "The question is the killed bet",
+            start: "You send the checkout capstone to someone who has set direction in more than one organization.",
+            steps: [
+              { t: "The artifact", d: "The strategy, the decision record, and the name of the person who made the last ordinary tax decision." },
+              { t: "The question", d: "`Which bet should I have killed sooner, and where is the bench still me?`" },
+            ],
+            end: "They can answer from the packet. Your next scope is a response to that answer.",
+          },
+          exercise: {
+            prompt: "Write the note you would send with the capstone. Name two outcomes you can show, one that is still thin, and the question you want answered. Then write two sentences on what you will do next: stay on technical direction, learn the people-management work this path left out, or go deeper on a specialization.",
+            constraints: [
+              "The question points at a bet, a boundary, or the bench.",
+              "The next step is named as work, not as a title.",
+              "If you choose people management, say it is outside this path.",
+            ],
+            done: "A note someone could answer, and a two-sentence next step.",
+            rubric: [
+              "The note names two outcomes I can show and one that is still thin.",
+              "The question points at the capstone's bet, boundary, or bench.",
+              "The next step is a kind of work, and people management is named as outside this path if I chose it.",
+            ],
+            model: [
+              { type: "p", text: "`The strategy kills the rewrite, tax has one owner, and Finance can ship an ordinary rate change. I am still thin on a portfolio that adds up to eighteen people. Which bet should I have killed sooner?` Next: I will keep setting technical direction on checkout, and I will not treat this capstone as training in performance conversations. That work is outside this path." },
             ],
           },
         },

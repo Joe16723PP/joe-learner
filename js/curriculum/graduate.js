@@ -6,14 +6,61 @@ registerLevel({
   audience: "People who can already write small programs and want to work the way a team works. Recent graduates and self-taught programmers who finished the beginner outcomes belong here.",
   prerequisites: "The beginner outcomes. You can write functions and use lists, dictionaries, sets, stacks, and queues without looking up the basics.",
   buildsOn: "Beginner work is a program in isolation. This level is the same skills under team conditions: history, other people's code, tests, failure, and shared tools. Syntax and data-structure introductions stop here.",
-  note: "Must-know is the gate. Should-know is judgment that makes the first year smoother, and it does not lock Junior. Examples use Git, HTTP, and SQL. They do not assume one company stack.",
+  note: "Must-know is the gate. Should-know is judgment that makes the first year smoother, and it does not lock Junior. Automated checks and deployment are part of the gate. Examples use Git, HTTP, and SQL. They do not assume one company stack.",
+  pace: "About 30–45 hours for the must-know lessons. Should-know work is extra. This is an estimate, not a schedule.",
   canDo: [
     "Clone a project, create a branch, make a focused commit, and merge or rebase onto the main line with a resolved conflict.",
     "Read an unfamiliar small codebase and trace one behavior from its entry point to the data it changes.",
     "Add tests that fail when a bug is present, debug from a reproduction, and describe the change for a reviewer.",
     "Keep secrets out of the repository, parameterize queries and commands, and separate user-facing errors from log records.",
+    "Run one check command before sharing a change, and describe how that change moves through environments with a way to undo it.",
   ],
   modules: [
+    {
+      id: "2.0",
+      title: "Placement",
+      summary: "An alternate check for people who can already do this level.",
+      why: "Team practice is a set of outcomes. A diploma is not one of them.",
+      lessons: [
+        {
+          id: "2.0",
+          title: "Check this level",
+          track: "core",
+          placement: true,
+          concept: [
+            { type: "p", text: "This check is an alternate way through the gate. Completing it opens Junior. Completing every must-know lesson also opens Junior. You do not need both." },
+            { type: "p", text: "Must-know here is the team bar: history, reading code, tests, debugging, a project someone else can run, JSON and HTTP, SQL, errors and logs, review, security habits, automated checks, and a release across environments." },
+            { type: "p", text: "Should-know can wait. Do not check a line you cannot show. Junior assumes these outcomes are fluent." },
+          ],
+          example: {
+            title: "A change packet instead of a course",
+            start: "You have shipped small changes on a team. You have not used this site's contact book.",
+            steps: [
+              { t: "One packet", d: "A branch, a focused commit, a test that failed before the fix, a review note, and a secret that stayed out of the diff." },
+              { t: "The gap", d: "If you cannot say what a 409 means, or how a migration of one row stays in a transaction, leave that line unchecked and open the lesson." },
+            ],
+            end: "The packet is the evidence. The unchecked line is the next lesson.",
+          },
+          exercise: {
+            prompt: "Assemble a small change packet for a function you already know, or for the contact book. Check a line only when the packet shows it.",
+            constraints: [
+              "The packet includes a commit message that says why, and a conflict or a rebase you can describe.",
+              "A test fails on the bug and passes after the fix.",
+              "Secrets, SQL, and the user-facing error are handled as the lessons describe, or the matching line stays unchecked.",
+            ],
+            done: "A packet another person could review, with unchecked lines pointing at the lesson you still need.",
+            rubric: [
+              "I can branch, commit with a why, and resolve a conflict or rebase onto the main line.",
+              "I can trace one behavior in code I did not write, add a failing test, and debug from a reproduction.",
+              "I can keep a secret out of the repo and out of a prompt, parameterize a query, separate a user-facing error from a log, review a change, run one check command, and name how a release moves across environments with a rollback.",
+            ],
+            model: [
+              { type: "p", text: "A passing packet is a branch that strips spaces and then rejects letters in a phone, with both intentions in the commit message, a test that failed first, a log line without the phone number, and a README command that exits non-zero when that test is broken. The rollback sentence names a redeploy. If any of that is missing, the matching lesson is still the work." },
+            ],
+          },
+        },
+      ],
+    },
     {
       id: "2.1",
       title: "Version control",
@@ -642,6 +689,7 @@ binary_search names for "anne" using compare_folded
             { type: "p", text: "As the reviewer, in order: correctness, tests, failure behavior, names that mislead, then style. Automation should carry formatting." },
             { type: "p", text: "Comments are specific. \"This is wrong because a retry will insert a second note\" is a review. \"I would have written this differently\" is a preference. Label it that way." },
             { type: "p", text: "Ask a question when you do not understand. A review is about the code." },
+            { type: "p", text: "A tool may draft the change. You still trace it, run it, and explain it. A generated diff that fixes the bug and also renames unrelated functions is two changes. Ask for the extra one to leave, the same way you would ask a teammate." },
           ],
           example: {
             title: "One blocking comment on an empty handler",
@@ -694,6 +742,7 @@ binary_search names for "anne" using compare_folded
               "One comment blocks merge until a test covers the inclusive range, and it names a boundary.",
               "One comment asks why the three renames are in this change.",
               "One sentence states the condition for approval.",
+              "I would give the same comments if a tool had generated the diff: the extra renames still have to leave or be justified.",
             ],
             model: [
               { type: "p", text: "Blocking: `A range of one day, start == end, used to return 0 and now returns 1. There is no test that fails on the old return value. Please add that case before merge.` Question: `Did fetch_user, compute_total, and invoice need to change for the range fix, or can those renames be a separate commit?` Approval: `I will approve when the one-day range is tested and the renames are either justified or moved out.`" },
@@ -719,6 +768,7 @@ binary_search names for "anne" using compare_folded
             { type: "p", text: "Store passwords only as a slow password hash from a current library. Do not invent a hash. Do not store passwords so they can be decrypted." },
             { type: "p", text: "Authentication answers who is calling. Authorization answers whether this caller may touch this record. A logged-in user is not allowed to do every action." },
             { type: "p", text: "Dependencies can contain flaws. Know the file that lists them so you can update a known-bad version." },
+            { type: "p", text: "Secrets stay out of prompts and out of text you paste into a tool. A prompt is another log. If a token or a password lands there, treat it as leaked and rotate it. Describe the shape of the bug. Do not paste the live credential that makes the bug happen." },
           ],
           example: {
             title: "A password that landed in a log",
@@ -730,13 +780,13 @@ binary_search names for "anne" using compare_folded
             end: "The next login failure is diagnosable without storing a reusable secret. The old log line is treated as a leak, not as a closed incident, until the passwords are rotated.",
           },
           exercise: {
-            prompt: "Three defects are sketched below. For each, name the failure and the replacement habit.",
+            prompt: "Four defects are sketched below. For each, name the failure and the replacement habit.",
             constraints: [
               "Name the habit, not a product brand.",
               "The login sketch is about the query. The token sketch is about where the secret lives. The delete sketch is about authorization.",
               "Do not propose a hash you invented.",
             ],
-            done: "Each defect has a failure name and a replacement: parameters, a secret store plus rotation, or an owner or role check on the specific record.",
+            done: "Each defect has a failure name and a replacement: parameters, a secret store plus rotation, an owner or role check on the specific record, or a prompt that describes the bug without the secret.",
             snippets: [
               {
                 caption: "Login lookup",
@@ -760,11 +810,19 @@ binary_search names for "anne" using compare_folded
     database.delete("notes", note_id)
 `,
               },
+              {
+                caption: "A prompt that includes the token",
+                lang: "text",
+                code: `Help me debug this header:
+Authorization: Bearer live-token-pasted-into-the-prompt
+`,
+              },
             ],
             rubric: [
               "The login lookup is named as concatenation into SQL, and the replacement is a parameterized query.",
               "The token is named as a leaked secret, and the replacement is a secret store plus rotation.",
               "The delete is named as a missing authorization check, and the replacement is an owner or role check on that note.",
+              "The prompt is named as a leaked secret, and the replacement is to rotate the token and describe the bug without pasting it.",
             ],
             model: [
               { type: "p", text: "Parameters mean the email is data, not part of the query text. The token is removed from source and from history as far as you can, and it is rotated because history still counts. The delete checks that this caller may delete this note. Being logged in only answers who they are." },
@@ -782,7 +840,7 @@ binary_search names for "anne" using compare_folded
         {
           id: "2.11",
           title: "Automated checks",
-          track: "should",
+          track: "must",
           thread: "Contact book",
           concept: [
             { type: "p", text: "One command runs tests and a static or format check. The same command is what a shared automation system runs on a proposed change." },
@@ -814,6 +872,53 @@ binary_search names for "anne" using compare_folded
             ],
             model: [
               { type: "p", text: "The name can be whatever your ecosystem uses, as long as it is one command and the README quotes it exactly. The exit code is the evidence, not a screenshot of a green badge with the test deleted." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "2.18",
+      title: "Deployment and environments",
+      summary: "What a release is, from your machine to production, and how you undo it.",
+      why: "A later lesson asks for a release and a rollback note. Those words name environments, not a feeling that the code is done.",
+      lessons: [
+        {
+          id: "2.18",
+          title: "Deployment and environments",
+          track: "must",
+          concept: [
+            { type: "p", text: "A change has three places it can exist. On your machine it is local. On the shared line it is integrated, and the check command from [[2.11]] has run. In production it is what users run. \"Released\" means the last of those, and it is the one a rollback has to reach." },
+            { type: "p", text: "An environment is a configuration of that place: which database, which secrets, which feature switches. Local, staging, and production are the usual three. Staging is where you rehearse against a copy of the shape of production. It is not production with a different banner." },
+            { type: "p", text: "Configuration that changes per environment comes from the environment, as [[2.5]] already required. A build artifact is the thing you ship: a package, an image, or a bundle. You build it once and promote that same artifact. Rebuilding on the production machine means you shipped a different thing than you tested." },
+            { type: "p", text: "A pipeline is the repeatable path: check, build the artifact, deploy it to staging, then to production. A human may still approve the last step. The path is written down so it is not a sequence only one person remembers." },
+            { type: "p", text: "Rollback is redeploying the previous artifact, flipping a switch, or repairing data. Name which one. A database change that already ran may not go backwards when the artifact does." },
+          ],
+          example: {
+            title: "The same artifact, two environments",
+            start: "The contact book tests pass locally. A teammate asks whether it is released.",
+            steps: [
+              { t: "Not yet", d: "Local success is the first place. The check command on the shared line is the second. Users are not running it." },
+              { t: "Promote", d: "The pipeline builds one artifact from the commit you named. Staging gets that artifact and a staging database. Production gets the same artifact and the production database. You do not rebuild between them." },
+              { t: "Undo", d: "Rollback is redeploying the previous artifact. The staging database is disposable. If a migration already rewrote production rows, the rollback note says the data repair too." },
+            ],
+            end: "Released means production is running the artifact you tested. Undo names the previous artifact, not a hope.",
+          },
+          exercise: {
+            prompt: "Write a one-page release note for the contact book as if a team were about to run it for real. Name local, the shared line, staging, and production. Say what the pipeline does, which configuration changes per environment, and how you undo a bad release.",
+            constraints: [
+              "The artifact is built once and promoted. Say what it is, even if the project is only a source tree today.",
+              "Secrets and the data-file path are configuration, not values baked into the artifact.",
+              "The rollback says whether data needs a repair or a redeploy is enough.",
+            ],
+            done: "A reader can say where the change is, what the pipeline runs, and how to undo it.",
+            rubric: [
+              "I distinguished local, the shared line, staging, and production.",
+              "The pipeline checks, builds one artifact, and promotes that artifact.",
+              "The rollback names a redeploy of the previous artifact, and says whether data needs a separate repair.",
+            ],
+            model: [
+              { type: "p", text: "Local is your checkout. The shared line is the commit whose check command exited 0. Staging runs artifact `book-42` against a disposable database and a staging path in the environment. Production runs `book-42` again, with the production path and secrets supplied outside the artifact. Rollback redeploys `book-41`. Contacts already written by `book-42` stay unless you have a repair, and the note says so." },
             ],
           },
         },
@@ -1122,6 +1227,51 @@ binary_search names for "anne" using compare_folded
             ],
             model: [
               { type: "p", text: "Store `{count: 1, message: \"notes_found\"}` and let locale A say `1 note found` while locale B uses its own plural rules. Store `2026-03-01T00:00:00Z`, and format that instant in the reader's zone when you render it. The error carries the text `The contact book could not be loaded` plus a color. The text remains if the color is removed. If there is a control, its name is its purpose, and a keyboard path reaches the same action." },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      id: "2.19",
+      title: "Evidence for the next level",
+      summary: "What you can show, how you ask for feedback, and the case for Junior.",
+      why: "Junior is a claim that you can change a system you did not start. The evidence is a change packet, not a title.",
+      lessons: [
+        {
+          id: "2.19",
+          title: "Evidence for the next level",
+          track: "core",
+          career: true,
+          concept: [
+            { type: "p", text: "Junior assumes you can branch, test, review, and keep a secret out of the tree. The evidence is a change someone else accepted, or a packet they could accept." },
+            { type: "p", text: "Ask for feedback on the review description and the test, not on whether you seem ready. A specific question gets a specific answer." },
+            { type: "p", text: "The case for Junior names the must-know outcomes you can show. Should-know gaps can be named without pretending they block the gate." },
+          ],
+          example: {
+            title: "The question is the diff",
+            start: "You want a reviewer to tell you if the contact-book change is the kind of work Junior assumes.",
+            steps: [
+              { t: "Send the packet", d: "The branch, the test that failed first, the check command, and the sentence about what you did not test." },
+              { t: "Ask one thing", d: "`Does the test fail for the bug and pass for the fix, and did I keep the phone number out of the log?`" },
+            ],
+            end: "They can answer from the diff. Your case for Junior is that answer plus the outcomes you can repeat.",
+          },
+          exercise: {
+            prompt: "Write the note you would send with a change packet. Name two New graduate must-know outcomes you can show, one that is still thin, and the question you want answered. Then write two sentences that make the case for starting Junior.",
+            constraints: [
+              "The question points at the diff, the test, or the log line.",
+              "The thin outcome is a lesson you can name.",
+              "The case uses outcomes. It does not use a job title or time served.",
+            ],
+            done: "A note a reviewer could answer, and a two-sentence case.",
+            rubric: [
+              "The note names two must-know outcomes I can show and one that is still thin.",
+              "The question points at a behavior in the change packet.",
+              "The case for Junior is about outcomes, not a title.",
+            ],
+            model: [
+              { type: "p", text: "`The branch resolves the phone rules and the test failed before the fix. The check command is in the README. I am still thin on describing a pipeline with staging and production. Does the log line identify the contact without the phone number?` The case: I can ship a reviewed change with a test and without a leaked secret. Junior is next because those are the outcomes it assumes, and the thin one is deployment, which I can name." },
             ],
           },
         },
