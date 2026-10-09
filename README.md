@@ -138,7 +138,7 @@ Must-know, and these open Senior:
 
 Should-know, which can be skipped: a feature-flag rollout, abuses of one operation, a query at a realistic size, and pairing so someone else can drive.
 
-The rest of the path (matching an existing design, changing a pattern with tests pinned, API contracts, tests that match the risk, where to specialize, and the evidence lesson) is taught in order and does not lock Senior. Generated code is checked against the local pattern. The capstone is code, in any language, plus a review description.
+The rest of the path (matching an existing design, changing a pattern with tests pinned, API contracts, tests that match the risk, where to specialize, and the evidence lesson) is taught in order and does not lock Senior. Generated code is checked against the local pattern. The capstone is code, in any language, plus a review description. The address write is one conditional update, and old free-text addresses stay readable while the new columns are filled.
 
 | Module | What it covers |
 | --- | --- |
@@ -152,7 +152,7 @@ The rest of the path (matching an existing design, changing a pattern with tests
 | 3.8 Observability and junior-scope incidents | One signal that it works, one that it fails, and the first steps |
 | 3.9 Collaboration, estimation, and everyday quality | Slices for a delivery-address change. The slice lesson is must-know |
 | 3.10 Where to specialize next | Frontend, mobile, data, site reliability, and security, as pointers |
-| 3.11 Orders capstone | One coded change that uses the must-know outcomes together |
+| 3.11 Orders capstone | A guarded address write, with structured fields for old free-text rows |
 | 3.0 Placement | An alternate check for the must-know outcomes |
 | 3.12 Evidence for the next level | What you can show, and the case for Senior |
 
@@ -168,7 +168,7 @@ Must-know, and these open Technical leader: problem framing, the design with opt
 
 Should-know: build versus buy, repairing domain language, a blameless review, and a capacity sketch.
 
-On the path, and not part of the gate: a requirement session with product or design, privacy and deletion, technical debt, and the evidence lesson. Review treats a generated design the same way it treats a teammate's. The capstone is a design note plus a conditional write in any language.
+On the path, and not part of the gate: a requirement session with product or design, privacy and deletion, technical debt, and the evidence lesson. Review treats a generated design the same way it treats a teammate's. The capstone is a design note plus a guarded status transition in any language. The function performs the transition as one conditional update.
 
 | Module | What it covers |
 | --- | --- |
@@ -183,7 +183,7 @@ On the path, and not part of the gate: a requirement session with product or des
 | 4.9 Performance, cost, and security constraints | A budget, the dominant cost, and the abuse path. The abuse-path lesson is must-know |
 | 4.10 Caching | What may be stale, and when to refuse a cache. Must-know. Taught before review |
 | 4.11 Review and mentoring | Systemic risk in review, including a generated design, and an outcome someone else can own |
-| 4.12 Area capstone | A double-shipment design and a conditional write |
+| 4.12 Area capstone | A guarded status transition and a conditional update |
 | 4.0 Placement | An alternate check for the must-know outcomes |
 | 4.13 Evidence for the next level | What you can show, and the case for technical leadership |
 
@@ -206,7 +206,7 @@ Must-know, and these finish the level:
 
 Should-know: external constraints you already promised, a portfolio of engineering cost, and hiring for a missing signal.
 
-Now / next / later, saying no, and delivery stewardship are on the path and do not gate completion. Delivery stewardship includes a team policy for generated code. The capstone is the strategy, the decision, the boundary, the incident action, and a function that records a dedupe key and the charge in one step.
+Now / next / later, saying no, and delivery stewardship are on the path and do not gate completion. Delivery stewardship includes a team policy for generated code. The capstone is the strategy, the decision, the boundary, the incident action, and a reconciliation query that shows whether the duplicate-charge fix held.
 
 | Module | What it covers |
 | --- | --- |
@@ -218,7 +218,7 @@ Now / next / later, saying no, and delivery stewardship are on the path and do n
 | 5.6 Growing engineers and the leadership bench | A decision you currently make, made by someone else next time |
 | 5.7 Communication, conflict, and saying no | Two audiences, a written decision, and a no that includes what would change it |
 | 5.8 Delivery systems and stewardship | Shorten a wait you control, reward the strategy you stated, and set a policy for generated code |
-| 5.9 Checkout capstone | Strategy, decision, boundary, incident action, and an atomic charge function |
+| 5.9 Checkout capstone | Strategy, decision, boundary, incident action, and a reconciliation query |
 | 5.0 Placement | An alternate check for the must-know outcomes |
 | 5.10 Evidence for what you do next | The case for technical direction, a specialization, or the people-management work this path leaves out |
 

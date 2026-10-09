@@ -494,10 +494,10 @@ save(order):
           thread: "Orders",
           concept: [
             { type: "p", text: "A queue holds work for later. A producer puts a message on. A consumer takes it off. The beginner queue was first in, first out. A message broker may reorder, deliver a copy twice, or not preserve order across consumers. Treat order as a guarantee only when that system documents it." },
-            { type: "p", text: "An event is a fact that already happened: an order was placed, a charge succeeded. It is not a command that asks someone to please try. Consumers who care about that fact subscribe. They do not reach into the producer's tables to notice." },
+            { type: "p", text: "An event is a fact that already happened: an order was placed, a charge succeeded. It is not a command that asks someone to please try. Consumers who care about that fact subscribe. They do not reach into the producer's tables to notice. The event names the order by id and does not copy personal fields such as the address." },
             { type: "p", text: "At-least-once delivery means the consumer may see the same message twice. A crash after the work and before the acknowledgement, or a retry from the queue, both cause a second delivery. The handler has to be safe under that. A dedupe key gives an exactly-once effect. It does not make delivery exactly once." },
             { type: "p", text: "The dedupe key is the same idea as the idempotency key on create-charge in [[3.5]]. Store the key and the effect in one transaction. A crash between the two brings the duplicate back. A second delivery with that key returns the first result and does not perform the effect again. A charge event whose key is the charge id must not create a second shipment." },
-            { type: "p", text: "An effect outside the database cannot share that transaction. The confirmation email is one. Write the event in the same transaction as the order, in an outbox, and let a separate publisher send it. The email consumer still keeps its own key, because the publisher can also send twice." },
+            { type: "p", text: "An effect outside the database cannot share that transaction. The confirmation email is one. Write the event in the same transaction as the order, in an outbox, and let a separate publisher send it. The publisher retries that row until the broker accepts it. Record the email key before sending, and a crash can lose the email. Record it after sending, and a crash can send it twice. An email cannot be made exactly once from your side. Pick the failure you accept, or pass the key to a provider that accepts an idempotency key." },
           ],
           example: {
             title: "The shipment that ran twice",
@@ -514,7 +514,7 @@ save(order):
               "Assume at-least-once delivery. Do not assume the queue delivers exactly once or in order.",
               "Each consumer has its own key. One consumer's key does not protect the other.",
               "The stock key and the reservation are one transaction. The confirmation uses an outbox because the send is outside the database.",
-              "The failure after the row is stored is named: the event is missing, or a retry publishes it.",
+              "When the publish fails, the outbox row is still there and the publisher retries it. The consumers' keys handle that retry.",
             ],
             done: "Two keys, the transaction for stock, the outbox for mail, and a sentence for the failed publish.",
             rubric: [
@@ -524,7 +524,7 @@ save(order):
               "I said what happens when the order row exists and the event was not published.",
             ],
             model: [
-              { type: "p", text: "Confirmation key: `confirm:<order_id>`. Stock key: `reserve:<order_id>`. The reservation and its key commit in one transaction, so a crash cannot reserve twice. The order row and an outbox row commit together. A publisher sends the message and may send it twice. The email consumer records its key before sending, and a second delivery skips the send. If the order row exists and the outbox row was never written, nothing is published. A sweep that writes the outbox for those rows closes the gap. Hoping the queue saw it is not a rule." },
+              { type: "p", text: "Confirmation key: `confirm:<order_id>`. Stock key: `reserve:<order_id>`. The reservation and its key commit in one transaction, so a crash cannot reserve twice. The order row and an outbox row commit together. A publisher sends the message and may send it twice. When the publish fails, the outbox row is still there, and the publisher retries it until the broker accepts it. The consumers' keys handle that retry. The email consumer sends, then records its key, and accepts a rare duplicate confirmation, because a missing confirmation costs a support call. Recording the key before the send would lose the email on a crash." },
             ],
           },
         },
@@ -732,10 +732,10 @@ save(order):
           ],
           example: {
             title: "A note sent before the session",
-            start: "A newer teammate will add the empty-input rejection on the easy slice. You already know the area.",
+            start: "A newer teammate will drive the unshipped-address slice. You already know the area.",
             steps: [
-              { t: "Context", d: "Tell them which function is the seam and which test file the area already uses. Do not tell them the keystrokes." },
-              { t: "Risk and the call", d: "The risk is rejecting a valid blank-optional field. They should call you before changing a validation rule that other commands share." },
+              { t: "Context", d: "The seam is the existing order update. The tests live next to the cancel-order tests. Do not tell them the keystrokes." },
+              { t: "Risk and the call", d: "The rule for what counts as shipped is the call point. They should call you before changing that rule, and before they touch the charge." },
             ],
             end: "They can start. You have not taken the keyboard, and they know when to stop and ask.",
           },
@@ -828,28 +828,28 @@ save(order):
           ],
           example: {
             title: "An address that was already there",
-            start: "Orders already store a delivery address. Some old rows have that field empty. You will let the buyer set it while the order is unshipped.",
+            start: "Orders store the address as one free-text field. You will let the buyer set street, city, and postal code while the order is unshipped.",
             steps: [
-              { t: "Code", d: "A function accepts an order, an address, and a key. It rejects a shipped order, stores the address on an unshipped order, and returns the first result when the key is known. Tests cover the shipped order, the empty old address, and the retry." },
-              { t: "The release note", d: "No new column. An empty address stays empty until a successful change. Rollback is a redeploy. The success signal is address updates. The failure signal is rejected shipped updates. The log line has the order id and not the street." },
+              { t: "Code", d: "A function accepts an order id, street, city, postal code, and a key. It updates the row only while `shipped` is false. Zero rows means the warehouse shipped first. A known key returns the first result. Tests cover that race, an old free-text row, and the retry." },
+              { t: "The release note", d: "Expand adds nullable street, city, and postal code. Readers use those fields when they are present and the free-text field otherwise. A backfill copies the free text in batches. Rollback is a redeploy. The new columns can stay. Success is address updates. Failure is a conflict, which is zero rows updated. The log line has the order id and not the street." },
             ],
             end: "One change, one review, one way to undo it. The retry does not write a second change.",
           },
           exercise: {
-            prompt: "Implement a small order change in any language: the buyer can set a delivery address while the order is unshipped. The address column already exists. Include tests, a data step for old orders whose address is empty, a rollback, one success signal and one failure signal, and a retried request that does not apply twice. Write the review description a teammate can check.",
+            prompt: "Implement a small order change in any language: the buyer can set a delivery address while the order is unshipped. Old orders store the address as one free-text field. The new write stores street, city, and postal code in new nullable columns, following expand, migrate, and contract from [[3.4]]. Include tests, the data step, a rollback, one success signal and one failure signal, and a retried request that does not apply twice. The shipped check and the address write are one conditional update. Write the review description a teammate can check.",
             constraints: [
-              "A shipped order is rejected. An unshipped order stores the address.",
+              "The shipped check and the address write are one conditional update, for example `UPDATE orders SET street = ?, city = ?, postal_code = ? WHERE id = ? AND shipped = false`. Zero rows updated means the order shipped first.",
               "The retry uses a key. The second call does not write a second change.",
               "The log line has an order id and no full address. The review description names behavior, tests, risk, and rollback.",
             ],
-            done: "Tests pass for the happy path, the shipped order, and the retry. The review description stands alone.",
+            done: "Tests pass for the happy path, the shipped race, and the retry. The review description stands alone.",
             rubric: [
               "The code and tests cover an unshipped change, a shipped rejection, and a retry that does not apply twice.",
-              "The data step lets old orders with an empty address keep working, and the rollback is a redeploy or a stated repair.",
+              "The data step adds nullable street, city, and postal code, keeps old free-text rows readable until a backfill, and the rollback is a redeploy or a stated repair.",
               "The review description includes behavior, test evidence, risk, a rollback, and one success signal plus one failure signal.",
             ],
             model: [
-              { type: "p", text: "Store `{order_id, address, shipped}` and a table of idempotency keys. The address column is already there. `set_address(order, address, key)` returns the first result when the key is known, rejects when `shipped` is true, and otherwise stores the address. An empty address on an old row stays empty until a successful change. Rollback redeploys the previous version and does not drop a column. Success: count of address updates. Failure: count of rejected shipped updates. Log `order_id` and `error_type`, not the street. The review says the risk is a free-form shipped flag, which you treated as a boolean in this slice." },
+              { type: "p", text: "Old orders store the address as one free-text field. Expand adds nullable street, city, and postal_code. Readers use the structured fields when they are present and the free-text field otherwise. A backfill copies the free text into the new columns in batches, which is the migrate step from [[3.4]]. Contract waits until the remaining free-text rows are the ones you agreed may stay empty. `set_address` runs `UPDATE orders SET street = ?, city = ?, postal_code = ? WHERE id = ? AND shipped = false` together with the idempotency key in one transaction. Zero rows updated means the order shipped first, and the call returns a conflict. A known key returns the first result. [[2.14]] is the lost update this update refuses. Rollback redeploys the previous version. The new columns can stay. Success: count of address updates. Failure: count of conflicts. Log `order_id` and `error_type`, not the street. The review says the risk is a free-form shipped flag, which this slice treats as a boolean in the WHERE clause." },
             ],
           },
         },

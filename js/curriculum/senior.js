@@ -59,7 +59,7 @@ registerLevel({
               "I can set a budget, name the dominant cost, and name an abuse path with a control.",
               "I can say when a cache is unsafe, including what may be stale and what stays the source of truth.",
               "I can review for systemic risk, including a generated design, and hand someone else an outcome.",
-              "I can write a design note and a small function that records a key and its effect in one conditional write.",
+              "I can write a design note and a small function that performs a status transition in one conditional update and reports a lost race as a conflict.",
             ],
             model: [
               { type: "p", text: "A passing account frames double submission as the problem, refuses a client-only disable, names the step where rollback stops being a redeploy, says reserve times out without retrying a non-idempotent write, and blocks a cache that can outlive a price change. A tool list is not the account." },
@@ -296,7 +296,7 @@ registerLevel({
             { type: "p", text: "Personal data is data about a person: a name, an email, an address, a payment instrument, and an identifier that can be linked to that person. An order id is personal data when it points at a buyer's order. Amount, currency, and a state that does not name the person can remain for an accounting window you state. Collect the smallest set that the order needs to ship and to support. A field you might want later is not a reason to store it now." },
             { type: "p", text: "Say who may see what. The buyer sees their order. A packer sees the address and not the full payment instrument. An analyst sees counts, not a list of streets, unless a named job requires the streets and has a retention limit. [[2.8]] already kept the phone number out of the log. The same habit applies to the address." },
             { type: "p", text: "A deletion request removes or irreversibly detaches the personal data you do not have a duty to keep. What you must keep, such as a charge amount and date for a window you state here, stays, and the request is answered by saying what remains and why. A later lesson on evolving stored data uses that same window. Deletion is not \"we dropped the table.\"" },
-            { type: "p", text: "The order row is not the only copy. Logs, backups, analytics, caches, and event payloads can still hold the address. Blanking the row is the first step. The rule also says how long those copies live, and that a new read does not return the personal fields. A backup you cannot edit today is named, with the date it ages out." },
+            { type: "p", text: "The order row is not the only copy. Logs, backups, analytics, and caches can still hold the address. Events should carry the order id, not the address. A consumer that needs the address reads the current order, which is the copy a deletion can blank. [[3.6]] is where the event names the order by id. Payloads that already hold personal data age out on the queue's retention, and that retention is named. Blanking the order row is the first step. A new read does not return the personal fields. A backup you cannot edit today is named, with the date it ages out." },
             { type: "p", text: "Write the rule next to the data, the way a compatibility rule sits next to an interface. A later editor should not have to guess whether the gift note is personal data. It is, if it can name a person or a place." },
           ],
           example: {
@@ -304,7 +304,7 @@ registerLevel({
             start: "A buyer asks you to delete their data. Orders from last year still hold the delivery address. Accounting must keep the charge amount and the date for seven years.",
             steps: [
               { t: "Split the record", d: "Amount, currency, and date stay for seven years. The street, the gift note, the buyer email, and the order id that points at the buyer are personal. If that id is the link back to the person, replace it with an accounting reference that does not identify them, or state the duty that requires keeping the link." },
-              { t: "Delete and record", d: "Blank those fields and write a marker that a deletion ran. A second request finds the marker and does not fail. Logs, the cache, analytics, and event payloads stop returning the address. Backups age out on the date you name." },
+              { t: "Delete and record", d: "Blank those fields and write a marker that a deletion ran. A second request finds the marker and does not fail. Logs and the cache drop the address now. Analytics is rebuilt without it. New events carry only the order id. Old payloads age out on the queue's retention date. Backups age out on the date you name." },
             ],
             end: "The buyer can be told what remains and why. The address is gone from new reads. The charge amount is not.",
           },
@@ -323,7 +323,7 @@ registerLevel({
               "I named the other copies and how long they may keep the personal data.",
             ],
             model: [
-              { type: "p", text: "Personal: buyer email, delivery address, gift note, and the order id while it points at that buyer. Amount, currency, and a state that does not name the person can stay. Do not store the card number. The buyer and the packer may see the address until delivery. An analyst sees counts. Support may see the address for an open order and not after deletion. Deletion blanks email, address, and gift note, replaces the order id with an accounting reference that does not identify the buyer, writes `deleted_at`, and leaves amount and date for seven years. A second run sees the marker and stops. Logs and the cache drop the address now. Analytics and event payloads are rebuilt without it. Backups age out on a date you name, and the reply to the buyer says so." },
+              { type: "p", text: "Personal: buyer email, delivery address, gift note, and the order id while it points at that buyer. Amount, currency, and a state that does not name the person can stay. Do not store the card number. The buyer and the packer may see the address until delivery. An analyst sees counts. Support may see the address for an open order and not after deletion. Deletion blanks email, address, and gift note, replaces the order id with an accounting reference that does not identify the buyer, writes `deleted_at`, and leaves amount and date for seven years. A second run sees the marker and stops. Logs and the cache drop the address now. Analytics is rebuilt without it. Events carry the order id, not the address, and old payloads age out on the stated retention. Backups age out on a date you name, and the reply to the buyer says so." },
             ],
           },
         },
@@ -777,38 +777,38 @@ registerLevel({
       lessons: [
         {
           id: "4.12",
-          title: "Stop a double shipment",
+          title: "Guard the order status model",
           track: "must",
           thread: "Orders",
           concept: [
-            { type: "p", text: "This is the finished piece for the level. The scenario is a retried `charge_succeeded` event that can create two shipments. Any language is fine for the small function. The design note is the senior work." },
+            { type: "p", text: "This is the finished piece for the level. The scenario is the explicit status model from [[4.5a]]: draft, paid, shipped, canceled, and refunded. Any language is fine for the small function. The design note is the senior work." },
             { type: "p", text: "Bring the must-know outcomes into one place: the problem and its non-goals, two options, a compatibility window, what happens when the write fails, the step where rollback stops being a redeploy, a cache you refuse or accept, and an abuse with a control." },
-            { type: "p", text: "The hard step is the race. Two workers can both see no shipment yet. A lookup followed by a later insert loses that race. The function records the dedupe key and the shipment in one conditional write, so the second worker finds the key and does not insert." },
+            { type: "p", text: "[[3.11]] guarded one field. This guards the whole state model. The hard part is two writers racing: a cancel and the warehouse's mark-shipped both read `paid`, and both write. A read followed by a write loses that race. The function performs the transition as one conditional update, `UPDATE orders SET status = 'shipped' WHERE id = ? AND status = 'paid'`. Zero rows updated is a refused transition, and the caller reports a conflict." },
           ],
           example: {
             title: "A note that fits on two pages",
-            start: "The problem is double shipment after a retried charge event. You will not redesign the warehouse.",
+            start: "A cancel and a mark-shipped arrive in the same second. Both have read `paid`. You will not redesign the warehouse.",
             steps: [
-              { t: "Options", d: "A conditional insert of the key with the shipment, a lock around a check-then-insert, or a client that promises not to retry. You recommend the conditional insert. The client promise is refused. The lock is the option you did not pick." },
-              { t: "The function", d: "In one transaction, insert the shipment only when `charge:<charge_id>` is absent, and insert that key in the same statement's transaction. A second worker's insert conflicts and returns the stored shipment id. A timeout after the commit is unknown, and the retry hits the key." },
+              { t: "The lost race", d: "Check-then-write lets both succeed. The row becomes shipped, and the cancel is stored as if it had won, or the other way around. The order now has two meanings." },
+              { t: "The function", d: "`transition(order_id, 'paid', 'shipped')` updates the row only while the status is still `paid`. The other call updates zero rows and returns a conflict. Exactly one transition sticks." },
             ],
             end: "A reader can see the problem, the refusal, the failure mode, and the first shippable step.",
           },
           exercise: {
-            prompt: "Write a design note for stopping a second shipment when `charge_succeeded` is delivered twice, and implement the conditional write in any language. Include a non-goal, two other options you did not pick, the data compatibility window, the behavior when the database times out, the last step where rollback is still a redeploy, whether a cache is involved, and one abuse with a control. Hand the first slice to someone else in a short context note.",
+            prompt: "Write a design note for enforcing the transition rules from [[4.5a]], and implement `transition(order_id, from_state, to_state)` in any language. Include a non-goal, two other options you did not pick, the compatibility window while the old status string is still written, the behavior when the database times out, the last step where rollback is still a redeploy, whether a cache may hold status, and one abuse with a control. A buyer calling mark-shipped on their own order is the abuse, controlled by a role check. Hand the first slice to someone else in a short context note.",
             constraints: [
-              "The function records the dedupe key and the shipment in one conditional write. A lookup followed by a later insert does not pass.",
-              "A second worker returns the first shipment id and does not insert another row.",
-              "The context note leaves the warehouse workflow to the other person and names the risk you still want to see.",
+              "The transition is one conditional update. A read followed by a separate write does not pass.",
+              "Zero rows updated is a conflict. A disallowed transition, such as shipped back to paid, is refused by the rules, not by the caller.",
+              "The context note leaves the screen to the other person and names the risk you still want to see.",
             ],
             done: "A note and a function another engineer could review in one sitting.",
             rubric: [
-              "The note frames double shipment, names a non-goal, and compares at least two options besides the one I recommend.",
-              "The function records the key and the shipment in one conditional write, and the note covers a timeout, the compatibility window, and the last redeploy-safe step.",
+              "The note frames the status race, names a non-goal, and compares at least two options besides the one I recommend.",
+              "The function performs the transition in one conditional update and reports a lost race as a conflict, and the note covers a timeout, the compatibility window, and the last redeploy-safe step.",
               "I accepted or refused a cache with a reason, named one abuse and a control, and wrote a handoff that leaves a design choice open.",
             ],
             model: [
-              { type: "p", text: "Problem: a retried charge event creates two shipments. Non-goal: redesigning the warehouse, and changing the delivery address. Options: one transaction that inserts the shipment only when the charge key is absent, a lock around a check-then-insert, or a client that promises not to retry. Recommend the conditional insert. The function commits the key and the shipment together and returns the stored id when the key conflicts. Old charge events with no key stay readable and are not backfilled in this slice. A timeout retries the same key. Rollback is a redeploy until readers require the key. No cache: the shipment row is the source of truth. Abuse: a caller who reserves stock for another tenant's charge, controlled by an owner check on that charge. Handoff: they may design the warehouse screen. Consult you before a path that inserts a shipment without the key." },
+              { type: "p", text: "Problem: cancel and mark-shipped can both pass a check against `paid`. Non-goal: a new order service, and editing the delivery address. Options: one conditional update, a lock around a check-then-write, or trusting each caller to re-read. Recommend the conditional update. `transition` allows only the edges from [[4.5a]], then runs `UPDATE orders SET status = ? WHERE id = ? AND status = ?`. Zero rows is a conflict. A timeout retries the same update, which is safe because it changes a row only from the expected state. Expand keeps the old status string readable. Rollback is a redeploy until readers require the new column. No cache decides a transition: a cached status can be the state you already left. Abuse: a buyer calling mark-shipped, controlled by a role check that only the warehouse holds. Handoff: they may design the screen. Consult you before a path that writes status without the conditional update." },
             ],
           },
         },
@@ -833,15 +833,15 @@ registerLevel({
           ],
           example: {
             title: "The question is the handoff",
-            start: "You send the double-shipment note and the context note you gave someone else.",
+            start: "You send the status-transition note and the context note you gave someone else.",
             steps: [
               { t: "The artifact", d: "The decision, the first slice that shipped, and what the other person chose inside the boundary." },
-              { t: "The question", d: "`Did the boundary hold? Where did they have to come back because I kept a decision I should have given away?`" },
+              { t: "The question", d: "`Did the boundary keep them from writing status without the conditional update? Where did they have to come back because I kept a decision I should have given away?`" },
             ],
             end: "They can answer from the notes. The case for the next level is that answer.",
           },
           exercise: {
-            prompt: "Write the handoff question you would ask after someone else shipped the first slice of the double-shipment design. Ask whether the boundary held, and where they had to come back because you kept a decision. Name two Senior outcomes the note shows and one that is still thin. Then write two sentences that make the case for starting Technical leader.",
+            prompt: "Write the handoff question you would ask after someone else shipped the first slice of the status-transition design. Ask whether the boundary kept them from writing status without the conditional update, and where they had to come back because you kept a decision. Name two Senior outcomes the note shows and one that is still thin. Then write two sentences that make the case for starting Technical leader.",
             constraints: [
               "The question points at the design note or the handoff.",
               "The case is about direction across areas, not a title.",
@@ -854,7 +854,7 @@ registerLevel({
               "The case for Technical leader is about bets and boundaries, not a title.",
             ],
             model: [
-              { type: "p", text: "`The shipment guard inserts the key and the row together, refuses a cache, and the handoff left the warehouse screen to someone else. I am still thin on a capacity sketch. Did the boundary keep them from inserting a shipment without the key?` The case: I can frame an area and leave a decision with someone else. Technical leader is next because the next work is which problems get the group's attention, not another design inside one area." },
+              { type: "p", text: "`The status transition is one conditional update, a cache does not decide it, and the handoff left the screen to someone else. I am still thin on a capacity sketch. Did the boundary keep them from writing status without the conditional update?` The case: I can frame an area and leave a decision with someone else. Technical leader is next because the next work is which problems get the group's attention, not another design inside one area." },
             ],
           },
         },

@@ -853,9 +853,10 @@ Authorization: Bearer live-token-pasted-into-the-prompt
           track: "must",
           thread: "Contact book",
           concept: [
-            { type: "p", text: "One command runs tests and a static or format check. The same command is what a shared automation system runs on a proposed change." },
-            { type: "p", text: "A failing check blocks sharing the change. Fix the cause. Disabling the check to get a green result hides the next failure too." },
-            { type: "p", text: "Keep the command fast enough that people run it. A check nobody runs is decoration." },
+            { type: "p", text: "One command runs the checks the team agrees to share: tests, a linter, and a formatter check. Tests catch a wrong result. A linter catches a defect in the shape of the code. A formatter check catches a diff that is only whitespace. Each one is cheap enough to run on every change." },
+            { type: "p", text: "The command's exit code is the result. Zero means pass. Non-zero means fail. A script that prints errors and then exits zero hides the failure from anything that only looks at the code." },
+            { type: "p", text: "The same command runs on your machine and on the shared line. A later lesson's pipeline runs that same command before it promotes a release, so a green result locally is the check the shared line will trust." },
+            { type: "p", text: "A failing check blocks sharing the change. Fix the cause. Disabling the check to get a green result hides the next failure too. Keep the command fast enough that people run it. A check nobody runs is decoration." },
           ],
           example: {
             title: "A red result that stays red",
