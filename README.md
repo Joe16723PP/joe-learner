@@ -32,7 +32,7 @@ The levels are one path.
 | Senior | An area: problem, design, operability, and other engineers | 10 must-know lessons |
 | Technical leader | Direction across areas: bets, decisions, boundaries, delivery | 6 must-know lessons finish this level |
 
-Each level also has a placement check. Completing that check opens the next level. Completing every must-know lesson also opens it. The placement lesson is not an extra requirement.
+Each level also has a placement check, with one line per must-know lesson. Completing that check opens the next level. Completing every must-know lesson also opens it. The placement lesson is not an extra requirement.
 
 Pace on each level page is an estimate for a careful pass, not a schedule: Beginner about 50–70 hours, New graduate must-know about 30–45, Junior about 35–50, Senior about 30–45, Technical leader about 25–35.
 
@@ -80,9 +80,9 @@ When they finish, they can read and write small Python 3 programs, choose a fitt
 | 1.11 How much work a solution does | Constant, linear, and nested work, judged by growth |
 | 1.12 Trees and graphs | Nested structure, networks, walks, and cycles (two lessons) |
 | 1.13 Debugging | Tracebacks, a prediction, a smaller input, and a kept failure |
-| 1.15 Exceptions | Raise, and catch only when you have a next step |
-| 1.16 Imports, modules, and records | More than one file, and fields grouped into one record |
-| 1.14 Text files and a finished program | Data that outlives one run, and a contact book |
+| 1.14 Exceptions | Raise, and catch only when you have a next step |
+| 1.15 Imports, modules, and records | More than one file, and fields grouped into one record |
+| 1.16 Text files and a finished program | Data that outlives one run, and a contact book |
 | 1.17 Evidence for the next level | What you can show, and the case for New graduate |
 
 ## New graduate
@@ -91,7 +91,7 @@ For people who can already write small programs and want to work the way a team 
 
 Must-know, when they finish: clone and branch, trace one behavior in unfamiliar code, add a failing test and describe the change, keep secrets out of the repository and out of prompts, run one check command, and describe a release across environments with a rollback.
 
-20 modules, 21 lessons. Must-know is 2.1–2.11 plus deployment (2.18). Should-know is 2.12–2.17. Placement (2.0) and the evidence lesson (2.19) do not lock Junior. Review includes a generated diff. Security includes a secret pasted into a prompt.
+20 modules, 21 lessons. Must-know is 2.1–2.11 plus deployment (2.12). Should-know is 2.13–2.18. Placement (2.0) and the evidence lesson (2.19) do not lock Junior. Review includes a generated diff. Security includes a secret pasted into a prompt.
 
 | Module | Track | What it covers |
 | --- | --- | --- |
@@ -106,13 +106,13 @@ Must-know, when they finish: clone and branch, trace one behavior in unfamiliar 
 | 2.9 Code review | Must-know | A small change, a specific comment, and a condition for approval |
 | 2.10 Security habits | Must-know | Secrets, parameters, prompts, and who is calling versus what they may do |
 | 2.11 Automated checks | Must-know | One command the team runs before a change is shared |
-| 2.18 Deployment and environments | Must-know | Local, the shared line, staging, production, and a rollback |
-| 2.12 Modules, coupling, and cohesion | Should-know | One reason to change, and a direction for imports |
-| 2.13 Concurrency as a concept | Should-know | Lost updates, locks, and one owner of the data |
-| 2.14 Measuring | Should-know | A question, a baseline, and the spread across a few runs |
-| 2.15 Writing for the next reader | Should-know | Names, constraints, and a README that can stand alone |
-| 2.16 Dependencies and reproducible setup | Should-know | A declared, pinned set that installs on a clean machine |
-| 2.17 Locales, text, and access | Should-know | Strings, instants, and signals that are not color alone |
+| 2.12 Deployment and environments | Must-know | Local, the shared line, staging, production, and a rollback |
+| 2.13 Modules, coupling, and cohesion | Should-know | One reason to change, and a direction for imports |
+| 2.14 Concurrency as a concept | Should-know | Lost updates, locks, and one owner of the data |
+| 2.15 Measuring | Should-know | A question, a baseline, and the spread across a few runs |
+| 2.16 Writing for the next reader | Should-know | Names, constraints, and a README that can stand alone |
+| 2.17 Dependencies and reproducible setup | Should-know | A declared, pinned set that installs on a clean machine |
+| 2.18 Locales, text, and access | Should-know | Strings, instants, and signals that are not color alone |
 | 2.0 Placement | Alternate | An alternate check for the must-know outcomes |
 | 2.19 Evidence for the next level | On the path | What you can show, and the case for Junior |
 
@@ -131,9 +131,9 @@ Must-know, and these open Senior:
 - 3.1 Learning a codebase
 - 3.2 From a report to a release
 - 3.4 Data changes and migrations
-- 3.7 Observability and junior-scope incidents
-- 3.8a Slices and estimates
-- 3.9 Queues, events, and delivery
+- 3.6 Queues, events, and delivery
+- 3.8 Observability and junior-scope incidents
+- 3.9a Slices and estimates
 - 3.11 Ship one order change
 
 Should-know, which can be skipped: a feature-flag rollout, abuses of one operation, a query at a realistic size, and pairing so someone else can drive.
@@ -147,10 +147,10 @@ The rest of the path (matching an existing design, changing a pattern with tests
 | 3.3 Working with an existing design | Extend the local pattern, including a generated diff, and then change a pattern with the tests pinned |
 | 3.4 Data changes and migrations | Expand, migrate, contract, for buyer email on an order |
 | 3.5 APIs and contracts | What callers may rely on, and how a charge on an order changes shape |
-| 3.9 Queues, events, and delivery | At-least-once delivery and a dedupe key. Must-know. Taught after contracts |
-| 3.6 Testing in a larger system | Unit, integration, and the one thing you must not fake |
-| 3.7 Observability and junior-scope incidents | One signal that it works, one that it fails, and the first steps |
-| 3.8 Collaboration, estimation, and everyday quality | Slices for a delivery-address change. The slice lesson is must-know |
+| 3.6 Queues, events, and delivery | At-least-once delivery and a dedupe key. Must-know. Taught after contracts |
+| 3.7 Testing in a larger system | Unit, integration, and the one thing you must not fake |
+| 3.8 Observability and junior-scope incidents | One signal that it works, one that it fails, and the first steps |
+| 3.9 Collaboration, estimation, and everyday quality | Slices for a delivery-address change. The slice lesson is must-know |
 | 3.10 Where to specialize next | Frontend, mobile, data, site reliability, and security, as pointers |
 | 3.11 Orders capstone | One coded change that uses the must-know outcomes together |
 | 3.0 Placement | An alternate check for the must-know outcomes |
@@ -164,28 +164,28 @@ When they finish, they can frame a problem with non-goals, compare real design o
 
 14 modules, 19 lessons. One path.
 
-Must-know, and these open Technical leader: problem framing, the design with options and a rollout, interfaces, evolving stored data, failure behavior and a runbook, delivery strategy, budgets and the abuse path (4.7a), caching (4.9), review and mentoring, and the area capstone (4.18).
+Must-know, and these open Technical leader: problem framing, the design with options and a rollout, interfaces, evolving stored data, failure behavior and a runbook, delivery strategy, budgets and the abuse path (4.9a), caching (4.10), review and mentoring, and the area capstone (4.12).
 
 Should-know: build versus buy, repairing domain language, a blameless review, and a capacity sketch.
 
-On the path, and not part of the gate: a requirement session with product or design, privacy and deletion, technical debt, and the evidence lesson. Review treats a generated design the same way it treats a teammate's. The capstone is a design note plus a small idempotent function in any language.
+On the path, and not part of the gate: a requirement session with product or design, privacy and deletion, technical debt, and the evidence lesson. Review treats a generated design the same way it treats a teammate's. The capstone is a design note plus a conditional write in any language.
 
 | Module | What it covers |
 | --- | --- |
 | 4.1 Problem framing | Outcomes, constraints, and non-goals, then a session with product or design |
 | 4.2 Design and tradeoffs | Options, the hard part, and a decision the next editor can find |
 | 4.3 Interfaces that survive change | Errors, retries, and a field you will not expose |
-| 4.15 Privacy and personal data | Minimization, who may see a record, and a deletion request. Taught before data evolution |
-| 4.4 Data evolution at area scale | Writers, readers, backfills, and one meaning per state |
-| 4.5 Reliability and operability | Failure behavior, a signal, and a runbook someone else can use |
-| 4.6 Delivery strategy | Ship the risky assumption first, and know the last reversible step |
-| 4.16 Technical debt | Name it, size it, and give it a trigger |
-| 4.7 Performance, cost, and security constraints | A budget, the dominant cost, and the abuse path. The abuse-path lesson is must-know |
-| 4.9 Caching | What may be stale, and when to refuse a cache. Must-know. Taught before review |
-| 4.8 Review and mentoring | Systemic risk in review, including a generated design, and an outcome someone else can own |
-| 4.18 Area capstone | One design and a small idempotent function |
+| 4.4 Privacy and personal data | Minimization, who may see a record, and a deletion request. Taught before data evolution |
+| 4.5 Data evolution at area scale | Writers, readers, backfills, and one meaning per state |
+| 4.6 Reliability and operability | Failure behavior, a signal, and a runbook someone else can use |
+| 4.7 Delivery strategy | Ship the risky assumption first, and know the last reversible step |
+| 4.8 Technical debt | Name it, size it, and give it a trigger |
+| 4.9 Performance, cost, and security constraints | A budget, the dominant cost, and the abuse path. The abuse-path lesson is must-know |
+| 4.10 Caching | What may be stale, and when to refuse a cache. Must-know. Taught before review |
+| 4.11 Review and mentoring | Systemic risk in review, including a generated design, and an outcome someone else can own |
+| 4.12 Area capstone | A double-shipment design and a conditional write |
 | 4.0 Placement | An alternate check for the must-know outcomes |
-| 4.19 Evidence for the next level | What you can show, and the case for technical leadership |
+| 4.13 Evidence for the next level | What you can show, and the case for technical leadership |
 
 ## Technical leader
 
@@ -206,7 +206,7 @@ Must-know, and these finish the level:
 
 Should-know: external constraints you already promised, a portfolio of engineering cost, and hiring for a missing signal.
 
-Now / next / later, saying no, and delivery stewardship are on the path and do not gate completion. Delivery stewardship includes a team policy for generated code. The capstone is the strategy, the decision, the boundary, the incident action, and a dedupe-key function.
+Now / next / later, saying no, and delivery stewardship are on the path and do not gate completion. Delivery stewardship includes a team policy for generated code. The capstone is the strategy, the decision, the boundary, the incident action, and a function that records a dedupe key and the charge in one step.
 
 | Module | What it covers |
 | --- | --- |
@@ -218,7 +218,7 @@ Now / next / later, saying no, and delivery stewardship are on the path and do n
 | 5.6 Growing engineers and the leadership bench | A decision you currently make, made by someone else next time |
 | 5.7 Communication, conflict, and saying no | Two audiences, a written decision, and a no that includes what would change it |
 | 5.8 Delivery systems and stewardship | Shorten a wait you control, reward the strategy you stated, and set a policy for generated code |
-| 5.9 Checkout capstone | Strategy, decision, boundary, incident action, and a dedupe-key function |
+| 5.9 Checkout capstone | Strategy, decision, boundary, incident action, and an atomic charge function |
 | 5.0 Placement | An alternate check for the must-know outcomes |
 | 5.10 Evidence for what you do next | The case for technical direction, a specialization, or the people-management work this path leaves out |
 
@@ -231,7 +231,7 @@ There is no build step and no server-side app. `index.html` loads the curriculum
 - `#/module/:id` a module and its lessons
 - `#/lesson/:id` one lesson
 
-Progress is stored in this browser under the key `joe-learner-edition-1`: which rubric lines are checked, the theme (system, light, or dark), and whether preview is on. Export and import move that JSON. Clearing progress asks for confirmation first.
+Progress is stored in this browser under the key `joe-learner-edition-2`: which rubric lines are checked, the theme (system, light, or dark), and whether preview is on. A saved edition 1 file is copied forward once. Checks move with the lesson when its rubric is unchanged. Placement checks, and lessons whose exercise changed, are left unchecked. Export and import move that JSON. Clearing progress asks for confirmation first.
 
 A lesson marked as placement satisfies that level's gate on its own. The must-know lessons remain the teaching path. The level page shows a pace estimate.
 
@@ -261,4 +261,4 @@ js/curriculum/senior.js    Level 4
 js/curriculum/leader.js    Level 5
 ```
 
-Edition 1. Add or change a lesson in the matching curriculum file. Keep concept, worked example, and exercise together. Mark the lesson `must`, `should`, or `core` so the gate stays aligned with the outcomes above.
+Edition 2. Add or change a lesson in the matching curriculum file. Keep concept, worked example, and exercise together. Mark the lesson `must`, `should`, or `core` so the gate stays aligned with the outcomes above. Lesson ids follow teaching order. Changing an id needs a progress map in `js/app.js`.

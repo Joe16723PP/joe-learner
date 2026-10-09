@@ -50,9 +50,13 @@ registerLevel({
             ],
             done: "A page someone could review, with unchecked lines pointing at lessons.",
             rubric: [
-              "I can trace one user action to the data it writes, and turn a vague report into a change with tests, a review description, and a rollback.",
-              "I can change stored data so old and new rows both work, and I can name a success signal and a failure signal for that change.",
-              "I can explain at-least-once delivery with a dedupe key, estimate the next slice with its assumption, and point at one change that combines those outcomes.",
+              "I can trace one user action to the data it writes.",
+              "I can turn a vague report into a change with tests, a review description, and a rollback.",
+              "I can change stored data so old and new rows both work during the rollout.",
+              "I can explain at-least-once delivery, give each consumer a dedupe key, and say why the key and the effect share one transaction.",
+              "I can name a success signal and a failure signal, and take the first steps in an incident I caused or noticed.",
+              "I can estimate the next slice and name the assumption that would change the estimate.",
+              "I can ship one order change that combines those outcomes, including a retry that does not apply twice.",
             ],
             model: [
               { type: "p", text: "A passing page traces cancel on an order, shows a KWD total fixed without rewriting billing, adds email with expand then backfill, names a log line with a request id and no coupon code, and describes a queue retry that uses the charge's idempotency key. If the page is only a list of technologies, it does not pass." },
@@ -219,7 +223,9 @@ save(order):
           thread: "Orders",
           concept: [
             { type: "p", text: "Use a feature flag or a config switch when the data change is hard to undo. The flag has an owner and a removal condition. A permanent flag is an unmade decision." },
-            { type: "p", text: "A code-only change that redeploys cleanly often does not need a flag. A flag you cannot delete is a second product path you now have to test forever." },
+            { type: "p", text: "A code-only change that redeploys cleanly often does not need a flag. A flag you cannot delete is a second product path you now have to test forever. Two merchants on two paths means two sets of tests, and both stay until the flag dies." },
+            { type: "p", text: "The safe path is the default. Say who can flip the switch, and what the system does when the flag is missing. A missing flag that turns the new path on is a launch you did not mean to make." },
+            { type: "p", text: "A flag does not replace the data sequence. Stopping new bad writes is the switch. Repairing rows already stored is a separate job. If you cannot name the day the flag is deleted, you have not decided." },
           ],
           example: {
             title: "A flag with an end date",
@@ -442,7 +448,9 @@ save(order):
           thread: "Orders",
           concept: [
             { type: "p", text: "Threat-model one operation. Ask what a hostile caller can spoof, replay, or read. Write two abuses and a control for each: an owner check, a key scope, a rate limit, or an audit." },
-            { type: "p", text: "This is a short list for one feature, not a full security program. Two abuses you can actually close are worth more than a catalog." },
+            { type: "p", text: "Logged in is not the same as allowed. Authentication says who is calling. Authorization says whether this caller may touch this order. An owner check sits on the object. A check that only asks \"is there a session?\" lets a caller name someone else's charge." },
+            { type: "p", text: "A replay is the same request arriving again. A second legitimate charge is a different request. The control for replay is an idempotency key stored with the first result. The control for a charge the caller does not own is the owner check. A rate limit slows a flood. An audit records who did what, and it does not by itself stop the call." },
+            { type: "p", text: "This is a short list for one feature, not a full security program. Two abuses you can actually close are worth more than a catalog. Each control names the check, the key, or the bound. A sentence that says \"we will be secure\" is not a control." },
           ],
           example: {
             title: "Two ways to misuse a refund",
@@ -474,59 +482,62 @@ save(order):
       ],
     },
     {
-      id: "3.9",
+      id: "3.6",
       title: "Queues, events, and delivery",
       summary: "A message can arrive more than once. The effect must not.",
       why: "A later decision asks for at-least-once delivery and a dedupe key. Background work is no longer only a name.",
       lessons: [
         {
-          id: "3.9",
+          id: "3.6",
           title: "Queues, events, and delivery",
           track: "must",
           thread: "Orders",
           concept: [
-            { type: "p", text: "A queue holds work for later. A producer puts a message on. A consumer takes it off. The waiting-line rule from the beginner queue still applies: first in, first out, unless the system says otherwise." },
+            { type: "p", text: "A queue holds work for later. A producer puts a message on. A consumer takes it off. The beginner queue was first in, first out. A message broker may reorder, deliver a copy twice, or not preserve order across consumers. Treat order as a guarantee only when that system documents it." },
             { type: "p", text: "An event is a fact that already happened: an order was placed, a charge succeeded. It is not a command that asks someone to please try. Consumers who care about that fact subscribe. They do not reach into the producer's tables to notice." },
-            { type: "p", text: "At-least-once delivery means the consumer may see the same message twice. A crash after the work and before the acknowledgement, or a retry from the queue, both cause a second delivery. The handler has to be safe under that. Exactly-once delivery is a property you build with a dedupe key, not a promise the queue makes for free." },
-            { type: "p", text: "The dedupe key is the same idea as the idempotency key on create-charge in [[3.5]]. Store the key with the first result. A second delivery with that key returns the first result and does not perform the effect again. A charge event whose key is the charge id must not create a second shipment." },
+            { type: "p", text: "At-least-once delivery means the consumer may see the same message twice. A crash after the work and before the acknowledgement, or a retry from the queue, both cause a second delivery. The handler has to be safe under that. A dedupe key gives an exactly-once effect. It does not make delivery exactly once." },
+            { type: "p", text: "The dedupe key is the same idea as the idempotency key on create-charge in [[3.5]]. Store the key and the effect in one transaction. A crash between the two brings the duplicate back. A second delivery with that key returns the first result and does not perform the effect again. A charge event whose key is the charge id must not create a second shipment." },
+            { type: "p", text: "An effect outside the database cannot share that transaction. The confirmation email is one. Write the event in the same transaction as the order, in an outbox, and let a separate publisher send it. The email consumer still keeps its own key, because the publisher can also send twice." },
           ],
           example: {
             title: "The shipment that ran twice",
             start: "When a charge succeeds, the orders service publishes `charge_succeeded` with the order id. The warehouse consumer creates a shipment and then acknowledges the message.",
             steps: [
               { t: "The crash", d: "The shipment is created. The process dies before the acknowledgement. The queue delivers the message again." },
-              { t: "The key", d: "The consumer stores `shipment_for_charge:<charge_id>` with the first shipment id. The second delivery finds the key and does not create another shipment." },
+              { t: "The key", d: "The consumer stores `shipment_for_charge:<charge_id>` and the shipment id in one transaction. The second delivery finds the key and does not create another shipment. A crash between the insert and the key would have brought the duplicate back, so they commit together." },
             ],
-            end: "The buyer gets one shipment. The queue was allowed to deliver twice. The effect was not.",
+            end: "The buyer gets one shipment. The queue was allowed to deliver twice, and it was not required to keep order. The effect was once.",
           },
           exercise: {
-            prompt: "An order publishes `order_placed` after the row is stored. A consumer sends the confirmation and a second consumer reserves stock. Both can see the message more than once. Write the delivery rule and the dedupe key for each consumer. Say what happens if the publish itself fails after the order row is stored.",
+            prompt: "An order publishes `order_placed` after the row is stored. A consumer sends the confirmation and a second consumer reserves stock. Both can see the message more than once, and the queue does not promise order. Write the delivery rule and the dedupe key for each consumer. Say how the stock key and the reservation are stored together. The confirmation cannot share a database transaction with its key. Say what happens if the publish itself fails after the order row is stored.",
             constraints: [
-              "Assume at-least-once delivery. Do not assume the queue delivers exactly once.",
+              "Assume at-least-once delivery. Do not assume the queue delivers exactly once or in order.",
               "Each consumer has its own key. One consumer's key does not protect the other.",
+              "The stock key and the reservation are one transaction. The confirmation uses an outbox because the send is outside the database.",
               "The failure after the row is stored is named: the event is missing, or a retry publishes it.",
             ],
-            done: "Two keys, one sentence each for what the second delivery does, and a sentence for the failed publish.",
+            done: "Two keys, the transaction for stock, the outbox for mail, and a sentence for the failed publish.",
             rubric: [
-              "I treated delivery as at-least-once and gave each consumer a dedupe key.",
-              "A second delivery does not send a second confirmation or reserve the stock twice.",
+              "I treated delivery as at-least-once, did not assume order, and gave each consumer a dedupe key.",
+              "The stock key and the reservation are stored in one transaction.",
+              "The confirmation uses an outbox, and a second delivery does not send a second email or reserve the stock twice.",
               "I said what happens when the order row exists and the event was not published.",
             ],
             model: [
-              { type: "p", text: "Confirmation key: `confirm:<order_id>`. Stock key: `reserve:<order_id>`. The second delivery finds the key and skips the effect. If the row is stored and the publish fails, the order exists without a confirmation or a reservation. A retry of the publish, or a sweep that publishes for rows with no recorded event, closes that gap. Hoping the queue saw it is not a rule." },
+              { type: "p", text: "Confirmation key: `confirm:<order_id>`. Stock key: `reserve:<order_id>`. The reservation and its key commit in one transaction, so a crash cannot reserve twice. The order row and an outbox row commit together. A publisher sends the message and may send it twice. The email consumer records its key before sending, and a second delivery skips the send. If the order row exists and the outbox row was never written, nothing is published. A sweep that writes the outbox for those rows closes the gap. Hoping the queue saw it is not a rule." },
             ],
           },
         },
       ],
     },
     {
-      id: "3.6",
+      id: "3.7",
       title: "Testing in a larger system",
       summary: "Unit, integration, and the one thing you must not fake.",
       why: "A test suite nobody trusts will be bypassed. A test suite that mocks away the real risk proves nothing.",
       lessons: [
         {
-          id: "3.6a",
+          id: "3.7a",
           title: "Tests that match the risk",
           track: "core",
           thread: "Orders",
@@ -564,15 +575,15 @@ save(order):
           },
         },
         {
-          id: "3.6b",
+          id: "3.7b",
           title: "A query at a realistic size",
           track: "should",
           thread: "Orders",
           concept: [
             { type: "p", text: "Run one query or endpoint against a realistic row count, thousands rather than five. State whether the plan is still acceptable, using the growth rules from [[1.11]] plus a measurement." },
             { type: "p", text: "Five rows hid the nested work. A thousand rows will not. The question is how the work grows as the order grows, not how the page felt on a sample you can count by hand." },
-            { type: "p", text: "Write the count before you time anything. One query for the order plus one query per line is linear in the number of lines. A join or a batched read stays flat for this page. The growth rule tells you which shape will hurt. The clock checks the prediction on a few hundred or a few thousand rows, the way [[2.14]] asked you to repeat a measurement before announcing a win." },
-            { type: "p", text: "Acceptable means the plan still fits the feature's use. An order page people open while packing or paying does not get to issue a query per line as its steady shape. A nightly export might tolerate more, and you say so. A cache is a later mechanism, after the shape is honest and a measurement says the honest shape is still too slow. [[4.9]] is where that decision gets its own lesson. Here you only refuse to treat five rows as evidence." },
+            { type: "p", text: "Write the count before you time anything. One query for the order plus one query per line is linear in the number of lines. A join or a batched read stays flat for this page. The growth rule tells you which shape will hurt. The clock checks the prediction on a few hundred or a few thousand rows, the way [[2.15]] asked you to repeat a measurement before announcing a win." },
+            { type: "p", text: "Acceptable means the plan still fits the feature's use. An order page people open while packing or paying does not get to issue a query per line as its steady shape. A nightly export might tolerate more, and you say so. A cache is a later mechanism, after the shape is honest and a measurement says the honest shape is still too slow. A later level teaches that decision. Here you only refuse to treat five rows as evidence." },
           ],
           example: {
             title: "One query per line",
@@ -604,13 +615,13 @@ save(order):
       ],
     },
     {
-      id: "3.7",
+      id: "3.8",
       title: "Observability and junior-scope incidents",
       summary: "One signal that it works, one signal that it fails, and the first steps.",
       why: "A change you cannot see in production is a guess. Juniors are often first to notice, and the first actions decide the size of the damage.",
       lessons: [
         {
-          id: "3.7",
+          id: "3.8",
           title: "Observability and junior-scope incidents",
           track: "must",
           thread: "Orders",
@@ -655,13 +666,13 @@ save(order):
       ],
     },
     {
-      id: "3.8",
+      id: "3.9",
       title: "Collaboration, estimation, and everyday quality",
       summary: "Slices, blockers, and a checklist you actually use.",
       why: "A hidden delay costs more than a wrong early estimate. Junior quality is consistency, and the team feels it in review and in handoff.",
       lessons: [
         {
-          id: "3.8a",
+          id: "3.9a",
           title: "Slices, estimates, and a personal checklist",
           track: "must",
           thread: "Orders",
@@ -710,12 +721,14 @@ save(order):
           },
         },
         {
-          id: "3.8b",
+          id: "3.9b",
           title: "Pairing so someone else can drive",
           track: "should",
           concept: [
             { type: "p", text: "Pair on a starter task. The newer person drives. You supply context, not keystrokes. You name the risk to watch and the point at which they should call you." },
-            { type: "p", text: "Driving means they make the edit. If your hands stay on the keyboard, you have a demonstration, not a pairing." },
+            { type: "p", text: "Driving means they make the edit. If your hands stay on the keyboard, you have a demonstration, not a pairing. When they pause, wait. Taking the keyboard to \"just show the next line\" ends the drive." },
+            { type: "p", text: "Context they cannot see is the seam, the test file the area already uses, and the edge of the slice. It is not the implementation. The unshipped address is their slice. The rule for what counts as shipped is the call point, because that rule is the risky one." },
+            { type: "p", text: "Send the note before the session. They should be able to start from it alone. You watch the risk you named. You do not narrate every keystroke, and you do not expand the slice in the middle of the hour." },
           ],
           example: {
             title: "A note sent before the session",
@@ -814,16 +827,16 @@ save(order):
             { type: "p", text: "The change is small enough to review in one sitting, and it still has a rollback, a data step, a signal, and a retried message that must not double-apply." },
           ],
           example: {
-            title: "A gift note, end to end, in miniature",
-            start: "Orders have no gift note. You will add an optional one.",
+            title: "An address that was already there",
+            start: "Orders already store a delivery address. Some old rows have that field empty. You will let the buyer set it while the order is unshipped.",
             steps: [
-              { t: "Code", d: "A function accepts an order and a note, rejects a note that is too long, and returns the updated order. A second call with the same idempotency key returns the first result. Tests cover the long note and the retry." },
-              { t: "The release note", d: "Expand a nullable column first. Rollback is a redeploy. Old orders read with no note. The success signal is gift notes stored. The failure signal is rejected updates. The log line has the order id and not the note text." },
+              { t: "Code", d: "A function accepts an order, an address, and a key. It rejects a shipped order, stores the address on an unshipped order, and returns the first result when the key is known. Tests cover the shipped order, the empty old address, and the retry." },
+              { t: "The release note", d: "No new column. An empty address stays empty until a successful change. Rollback is a redeploy. The success signal is address updates. The failure signal is rejected shipped updates. The log line has the order id and not the street." },
             ],
-            end: "One change, one review, one way to undo it. The retry does not write a second note.",
+            end: "One change, one review, one way to undo it. The retry does not write a second change.",
           },
           exercise: {
-            prompt: "Implement a small order change in any language: the buyer can set a delivery address while the order is unshipped. Include tests, a data step for orders that have no address column yet, a rollback, one success signal and one failure signal, and a retried request that does not apply twice. Write the review description a teammate can check.",
+            prompt: "Implement a small order change in any language: the buyer can set a delivery address while the order is unshipped. The address column already exists. Include tests, a data step for old orders whose address is empty, a rollback, one success signal and one failure signal, and a retried request that does not apply twice. Write the review description a teammate can check.",
             constraints: [
               "A shipped order is rejected. An unshipped order stores the address.",
               "The retry uses a key. The second call does not write a second change.",
@@ -832,11 +845,11 @@ save(order):
             done: "Tests pass for the happy path, the shipped order, and the retry. The review description stands alone.",
             rubric: [
               "The code and tests cover an unshipped change, a shipped rejection, and a retry that does not apply twice.",
-              "The data step lets old orders keep working, and the rollback is a redeploy or a stated repair.",
+              "The data step lets old orders with an empty address keep working, and the rollback is a redeploy or a stated repair.",
               "The review description includes behavior, test evidence, risk, a rollback, and one success signal plus one failure signal.",
             ],
             model: [
-              { type: "p", text: "Store `{order_id, address, shipped}` and a table of idempotency keys. `set_address(order, address, key)` returns the first result when the key is known, rejects when `shipped` is true, and otherwise stores the address. Old rows with no address column are read as empty during expand. Rollback redeploys the previous version. The nullable column can stay. Success: count of address updates. Failure: count of rejected shipped updates. Log `order_id` and `error_type`, not the street. The review says the risk is a free-form shipped flag, which you treated as a boolean in this slice." },
+              { type: "p", text: "Store `{order_id, address, shipped}` and a table of idempotency keys. The address column is already there. `set_address(order, address, key)` returns the first result when the key is known, rejects when `shipped` is true, and otherwise stores the address. An empty address on an old row stays empty until a successful change. Rollback redeploys the previous version and does not drop a column. Success: count of address updates. Failure: count of rejected shipped updates. Log `order_id` and `error_type`, not the street. The review says the risk is a free-form shipped flag, which you treated as a boolean in this slice." },
             ],
           },
         },
@@ -869,7 +882,7 @@ save(order):
             end: "They can answer from the note. Your case is the answer and the outcomes you can repeat.",
           },
           exercise: {
-            prompt: "Write the note you would send with the capstone. Name two Junior must-know outcomes you can show, one that is still thin, and the question you want answered. Then write two sentences that make the case for starting Senior.",
+            prompt: "Write the question you would ask the person who owns the area, with the release note attached. Ask about the rollback and the signal, not about whether you seem ready. Name two Junior outcomes the note already shows and one that is still thin. Then write two sentences that make the case for starting Senior.",
             constraints: [
               "The question points at the rollback, the data step, or the signal.",
               "The case names an area in outcomes, not a title.",

@@ -2,9 +2,7 @@
 
 Topic and content improvements for the curriculum. Site features are out of scope for now.
 
-Rounds 1–4 come from the first content review and were addressed in `40efb8b`. Rounds 5–10 come from the second review.
-
-Suggested order for what is open: fix accuracy first, then give the capstones their hard parts, then vary repeated scenarios, then fix numbering and the placement rubrics.
+Rounds 1–4 come from the first content review and were addressed in `40efb8b`. Rounds 5–10 come from the second review and are addressed in edition 2. Lesson ids below are the ids after the renumber.
 
 ## 1. Teach what later lessons already assume
 
@@ -51,55 +49,46 @@ Suggested order for what is open: fix accuracy first, then give the capstones th
 
 ## 5. Fix accuracy
 
-- [ ] **3.9 queue order.** The concept says queues are first-in, first-out "unless the system says otherwise." Warn that many queues do not guarantee order.
-- [ ] **3.9 "exactly-once delivery."** A dedupe key gives an exactly-once effect. Delivery is still at-least-once. Reword.
-- [ ] **3.9 atomic key and effect.** Say that the dedupe key and the effect are stored in one transaction. Otherwise a crash between them brings the duplicate back.
-- [ ] **3.9 effects outside the database.** The confirmation-email consumer cannot share a transaction with its key. Name the outbox pattern in the "publish failed after the row was stored" question.
-- [ ] **4.15 order id.** The model answer calls the order id "not personal by itself." An identifier linked to a person is usually personal data under privacy law. Correct it.
-- [ ] **4.15 copies of the data.** Deletion only blanks fields on the order row. Add the other copies: logs, backups, analytics, caches, and the event payloads from 3.9.
+- [x] **3.6 queue order.** A broker may reorder. Order is a guarantee only when that system documents it.
+- [x] **3.6 exactly-once effect.** A dedupe key gives an exactly-once effect. Delivery stays at-least-once.
+- [x] **3.6 atomic key and effect.** The stock key and the reservation commit in one transaction.
+- [x] **3.6 effects outside the database.** The confirmation uses an outbox.
+- [x] **4.4 order id.** An order id linked to a person is personal data.
+- [x] **4.4 copies of the data.** Deletion names logs, backups, analytics, caches, and event payloads.
 
 ## 6. Give the capstones their hard parts
 
-- [ ] **4.18 Senior capstone.** Require the race between an address change and the warehouse marking the order shipped, which 4.1b already names as the boundary. Handle it with a conditional update, building on 2.13. The idempotency key on setting an address is the weaker concern, because setting the same address twice is already safe.
-- [ ] **5.9 Technical leader capstone.** `dedupe_key(event)` only builds a string. Require the meaningful code: check the key and record the effect in one atomic step.
-- [ ] **Order address column.** 3.8a assumes the order already stores an address. 3.11 and 4.18 add a nullable column first. Pick one.
+- [x] **4.12 Senior capstone.** The problem is a double shipment. The function records the key and the shipment in one conditional write.
+- [x] **5.9 Technical leader capstone.** `apply_charge` records the key and the charge in one transaction.
+- [x] **Order address column.** The order already stores an address by 3.9a. Lesson 3.11 updates that field. Lesson 3.4 still teaches a new nullable column, on buyer email.
 
 ## 7. Vary repeated scenarios
 
-- [ ] **Delivery address change.** Used in 3.8a, 3.8b, 3.11, 4.1b, and 4.18. Give the Senior capstone a different area-scale problem, such as the status model from 4.4a or double shipment from a retried charge event.
-- [ ] **"51 queries at 50 children."** The same N+1 example appears in 3.6b, 4.7a, 4.7b, and 4.16. Vary the scenario or make each one build on the last.
-- [ ] **Cached inventory count.** 4.9 and 4.8 have nearly the same exercise. Have 4.8 review a different generated design, such as a migration that cannot roll back or a missing owner check.
+- [x] **Delivery address change.** 3.9a, 3.9b, 3.11, and 4.1b keep it. The Senior capstone is the double shipment.
+- [x] **Query counts.** 3.7b discovers the 51-query page. 4.8 cites that count as debt. 4.9a and 4.9b use a per-order export.
+- [x] **Review scenario.** 4.10 keeps the inventory cache. 4.11 reviews a migration that cannot roll back and a missing owner check.
 
 ## 8. Align prompts and rubrics
 
-- [ ] **5.8 Delivery systems.** The fourth rubric line asks for the generated-code policy, but the prompt does not. Add it to the prompt or drop the line.
-- [ ] **5.8 concept size.** Nine ideas in about 1,750 characters. Split or trim.
-- [ ] **Placement rubrics.** Each check has three rubric lines that bundle many outcomes. Use one line per must-know outcome so placement is not easier than the lessons it replaces.
-- [ ] **1.0 Beginner placement.** Add search, sorting, and growth (1.10–1.11), which the rubric leaves out.
-- [ ] **1.17 Beginner career lesson.** It assumes "a friend who already works on a team." Offer a community forum or a mentor as alternatives.
-- [ ] **Career lesson template.** All five evidence lessons follow the same template. Vary them by level.
-- [ ] **2.12 Modules, coupling, and cohesion.** Now overlaps 1.16 without referring to it. Build on 1.16 and raise the bar instead of re-teaching file splits.
+- [x] **5.8 Delivery systems.** The prompt asks for the generated-code policy, and the concept is five paragraphs.
+- [x] **Placement rubrics.** One line per must-know lesson: 18, 13, 7, 10, and 6.
+- [x] **1.0 Beginner placement.** Includes search, sorting, and growth.
+- [x] **1.17 Beginner career lesson.** The reader can be a friend, a community forum, or a mentor.
+- [x] **Career lesson template.** Each level asks a different question: the program, the change packet, the rollback, the handoff, or the work after this path.
+- [x] **2.13 Modules, coupling, and cohesion.** Starts from the Beginner split and asks for one reason to change and an import to refuse.
 
 ## 9. Fix numbering and cross-references
 
-- [ ] **Module numbers in teaching order.** These are out of sequence:
-  - [ ] 1.15 and 1.16 come before 1.14.
-  - [ ] 2.18 sits between 2.11 and 2.12.
-  - [ ] 3.9 sits between 3.5 and 3.6.
-  - [ ] 4.15 sits after 4.3.
-  - [ ] 4.16 and 4.9 come before 4.8.
-  - [ ] Senior jumps to 4.18 and 4.19, with no 4.10–4.14 or 4.17.
-- [ ] **Renumber in one pass.** Lesson IDs are the keys for saved progress, so changing them affects existing learners.
-- [ ] **Forward references into locked levels.** 3.6b points to 4.9, and 4.16 points to 5.2.
-- [ ] **Forward reference within a level.** 4.15 relies on the retention rule in 4.4, which comes later.
+- [x] **Module numbers in teaching order.** Ids match the order of the modules, from 1.14 through 4.13.
+- [x] **Renumber in one pass.** Saved edition 1 progress copies forward when the rubric length is unchanged. Changed exercises are left unchecked.
+- [x] **Forward references into locked levels.** The query lesson and the debt lesson name the later idea without a link into a closed level.
+- [x] **Forward reference within a level.** Privacy states its own retention window. Data evolution points back to it.
 
 ## 10. Deepen the remaining thin lessons
 
-Concept sections still run about 310–380 characters:
-
-- [ ] 3.2b A switch for a risky rollout
-- [ ] 3.5b Abuses of one operation (Junior's only security lesson, so do this first)
-- [ ] 3.8b Pairing so someone else can drive
-- [ ] 4.2b Build, buy, or operate
-- [ ] 4.4b When one word means five states
-- [ ] 4.5b A blameless review
+- [x] 3.2b A switch for a risky rollout
+- [x] 3.5b Abuses of one operation
+- [x] 3.9b Pairing so someone else can drive
+- [x] 4.2b Build, buy, or operate
+- [x] 4.5b When one word means five states
+- [x] 4.6b A blameless review

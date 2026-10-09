@@ -50,9 +50,12 @@ registerLevel({
             ],
             done: "An account someone could review, with unchecked lines pointing at lessons.",
             rubric: [
-              "I can publish a strategy with bets, non-goals, and a way to tell a bet is failing.",
-              "I can record a cross-team decision with an owner and a revisit, and give a production behavior one owner.",
-              "I can lead an incident without starting a rewrite, and name someone else who can make a class of decision I used to make alone.",
+              "I can publish a strategy with a few bets, non-goals, and a kill criterion for a bet I kept.",
+              "I can record a cross-team decision with an owner, an alternative, and a revisit date.",
+              "I can give a production behavior one owner, or a contract that removes a standing meeting.",
+              "I can lead an incident without starting a rewrite, and limit the follow-up to a few actions.",
+              "I can name someone else who can make a class of decision I used to make alone.",
+              "I can set direction for one checkout, including a function that records a dedupe key and its effect in one step.",
             ],
             model: [
               { type: "p", text: "A passing account has three bets and a kill criterion, a schema decision with a migration window and a date to check callers, one owner for tax, an incident checklist that refuses a weekend rewrite, and a named person who can approve an ordinary tax exception. A vision statement with no kill criterion does not pass." },
@@ -196,7 +199,7 @@ registerLevel({
           thread: "Checkout",
           concept: [
             { type: "p", text: "A one-page portfolio. Rough cost in people-weeks or on-call load for four buckets: running the current system, changing it for users, paying down a named debt, and platform work. The numbers can be coarse. They must be defined." },
-            { type: "p", text: "Define each bucket in a sentence before you put a number on it. Run is the work that keeps the current promise: on-call, the payment path, the fixes that stop a known bleed. Change is what a buyer or an operator can see. Debt is a named trap from [[4.16]], such as the tax module two teams edit. Platform is work that shortens a measured path for a named team. A platform with no team waiting on it is not in this bucket. It is a hobby, and hobbies do not get a number here." },
+            { type: "p", text: "Define each bucket in a sentence before you put a number on it. Run is the work that keeps the current promise: on-call, the payment path, the fixes that stop a known bleed. Change is what a buyer or an operator can see. Debt is a named trap from [[4.8]], such as the tax module two teams edit. Platform is work that shortens a measured path for a named team. A platform with no team waiting on it is not in this bucket. It is a hobby, and hobbies do not get a number here." },
             { type: "p", text: "The numbers are people-weeks or on-call load. Say which. Half of Checkout's weeks on run is a coarse claim you can argue with. \"A lot\" is not. The four numbers should be discussable against the headcount you actually have. If they add up to more people than exist, the portfolio is a wish and the strategy is already broken." },
             { type: "p", text: "Put the migration in a bucket on purpose. Tax ownership is debt if it pays down a trap. It is platform only if a named product outcome is blocked on the contract. The argument starts with the definition, then the number. [[5.2]] holds the ordered list. This page is the cost behind that list." },
           ],
@@ -524,12 +527,8 @@ registerLevel({
             { type: "p", text: "The path from idea to production should be visible: decision, review, test, deploy, measure. Leaders remove wait states they cause: late review, unclear priority, scarce environments." },
             { type: "p", text: "Limit work in progress. More concurrent bets means slower completion of each. Protect focus for the bets you already named." },
             { type: "p", text: "An internal platform earns its place by shortening a measured path for a product team. A platform with no team depending on it is a hobby." },
-            { type: "p", text: "Keep standards few, automated where possible, and tied to a failure they prevent. A rule nobody can explain will be bypassed." },
-            { type: "p", text: "Culture is the set of behaviors that get repeated: blameless reports, written decisions, respect in review, and an on-call load a team can survive." },
-            { type: "p", text: "Reward the strategy you stated. If you praise midnight heroics and ask for reliability, you will get midnight heroics." },
-            { type: "p", text: "Teach taste by the decisions you approve: clarity, reversibility, and evidence." },
-            { type: "p", text: "Leave the group more able than you found it: owners in place, bets written down, and fewer critical paths through one person." },
-            { type: "p", text: "Set a team policy for generated code, in the same spirit as the other standards. A tool may draft. A human still traces, tests, and explains the change in review. Secrets and personal data stay out of prompts. A migration, a charge, or an authorization check is not accepted because the diff was fast. The policy is short, and it names the failure it prevents: a second pattern, a leaked token, or a change nobody can roll back. Praise the review that caught those. Do not praise the volume of generated lines." },
+            { type: "p", text: "Keep standards few, automated where possible, and tied to a failure they prevent. A rule nobody can explain will be bypassed. The same standard covers generated code. A tool may draft. A human still traces, tests, and explains the change in review. Secrets and personal data stay out of prompts. A migration, a charge, or an authorization check is not accepted because the diff was fast. The policy names the failure it prevents: a second pattern, a leaked token, or a change nobody can roll back. Praise the review that caught those. Do not praise the volume of generated lines." },
+            { type: "p", text: "Culture is the set of behaviors that get repeated: blameless reports, written decisions, respect in review, and an on-call load a team can survive. Reward the strategy you stated. If you praise midnight heroics and ask for reliability, you will get midnight heroics. Teach taste by the decisions you approve: clarity, reversibility, and evidence. Leave the group more able than you found it: owners in place, bets written down, and fewer critical paths through one person." },
           ],
           example: {
             title: "A wait the leader was causing",
@@ -541,7 +540,7 @@ registerLevel({
             end: "The path is shorter because a habit of yours changed, not because a tool was announced.",
           },
           exercise: {
-            prompt: "Map the waits in one checkout change: idea, decision, review, test environment, deploy. Pick the longest wait you control and write the policy change that shortens it, including what you will stop doing. Then name three behaviors you will praise this month and three you will stop rewarding. Tie them to a midnight fix, a quiet migration, and a review that humiliated an author.",
+            prompt: "Map the waits in one checkout change: idea, decision, review, test environment, deploy. Pick the longest wait you control and write the policy change that shortens it, including what you will stop doing. Then name three behaviors you will praise this month and three you will stop rewarding. Tie them to a midnight fix, a quiet migration, and a review that humiliated an author. State the team policy for generated code: what it may draft, what a human still traces and tests, and what must not be pasted.",
             constraints: [
               "The policy change is yours. You do not assign the wait to a team you do not lead.",
               "Praise and the thing you stop rewarding are paired with the strategy: reliability, written decisions, respect in review.",
@@ -574,32 +573,32 @@ registerLevel({
           thread: "Checkout",
           concept: [
             { type: "p", text: "This is the finished piece for the level. The scenario is the checkout used by Shop, Subscriptions, and Point of sale. Eighteen engineers, flat headcount, a two-quarter horizon, and a payment-completion promise." },
-            { type: "p", text: "The artifact is written. It also includes one small function, in any language: the dedupe key for a charge event, so the delivery rule is concrete and not only a slogan." },
+            { type: "p", text: "The artifact is written. It also includes one small function, in any language: check the dedupe key and record the charge in one step, so a crash between the check and the write cannot create a second charge." },
           ],
           example: {
             title: "Four pages, one function",
             start: "Last month a retry duplicated charges. Tax is edited by two teams.",
             steps: [
               { t: "The packet", d: "A strategy with three bets and kill criteria. A decision record for the charge event. One owner for tax, and what the other team gives up. An incident action for this week that is not a rewrite." },
-              { t: "The function", d: "`dedupe_key(event)` returns `charge:<charge_id>`. A second delivery with that key does not charge again. The function is the bench's shared rule, not a private trick." },
+              { t: "The function", d: "`apply_charge(event)` inserts `charge:<charge_id>` and the charge in one transaction. A second delivery conflicts on the key and returns the stored charge. A function that only builds the string still allows a crash between the check and the write." },
             ],
             end: "Someone absent from the room can see the bets, the owner, and the key.",
           },
           exercise: {
-            prompt: "Write the capstone for this checkout: a strategy with kill criteria, a cross-team decision on the order-placed or charge event, a boundary for tax, an incident action for the duplicate-charge failure, and who makes the next ordinary tax decision without you. Include a dedupe-key function in any language, and the team policy for generated code in a short paragraph.",
+            prompt: "Write the capstone for this checkout: a strategy with kill criteria, a cross-team decision on the order-placed or charge event, a boundary for tax, an incident action for the duplicate-charge failure, and who makes the next ordinary tax decision without you. Include a function in any language that checks the dedupe key and records the charge in one atomic step, and the team policy for generated code in a short paragraph.",
             constraints: [
               "Headcount stays flat. The payment promise is a constraint.",
               "The decision has an owner, an alternative you rejected, and a revisit date.",
-              "The incident action this week is not a weekend rewrite. The function makes a second delivery safe.",
+              "The incident action this week is not a weekend rewrite. The function stores the key and the effect together. A string builder is not enough.",
             ],
             done: "A packet a staff engineer and a manager could both use, plus the function.",
             rubric: [
               "The strategy has a few bets, non-goals, and a kill criterion for each bet I kept.",
               "The decision record names an owner, an alternative, a migration window, and a date to check whether callers moved.",
-              "Tax has one owner or a contract, the incident action this week is not a rewrite, someone else can make the next ordinary tax decision, and the dedupe function stops a second charge.",
+              "Tax has one owner or a contract, the incident action this week is not a rewrite, someone else can make the next ordinary tax decision, and the function records the key and the charge in one atomic step.",
             ],
             model: [
-              { type: "p", text: "Bets: stop duplicate charges, one owner for tax, shorten one measured wait. Non-goal: a checkout rewrite. Kill a bet if the milestone's evidence is missing at the review. Decision: the charge event carries `charge_id` and is at-least-once. Checkout owns the schema. Reject a shared editable module. Revisit in six weeks by counting old callers. Tax: Finance owns the rate rules. Checkout gives up editing them and calls the contract. This week: stop the bleeding by making the retry use the key, and do not start a rewrite. The next ordinary rate change is Finance's, with Checkout reviewing only a contract break. `dedupe_key` returns `charge:` plus the id. Generated drafts are allowed. Tokens and card numbers are not pasted. A human traces the charge path." },
+              { type: "p", text: "Bets: stop duplicate charges, one owner for tax, shorten one measured wait. Non-goal: a checkout rewrite. Kill a bet if the milestone's evidence is missing at the review. Decision: the charge event carries `charge_id` and is at-least-once. Checkout owns the schema. Reject a shared editable module. Revisit in six weeks by counting old callers. Tax: Finance owns the rate rules. Checkout gives up editing them and calls the contract. This week: stop the bleeding by making the retry use the key, and do not start a rewrite. The next ordinary rate change is Finance's, with Checkout reviewing only a contract break. `apply_charge` inserts the key and the charge in one transaction and returns the stored charge when the key conflicts. Generated drafts are allowed. Tokens and card numbers are not pasted. A human traces the charge path." },
             ],
           },
         },

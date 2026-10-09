@@ -1,4 +1,45 @@
-const STORAGE_KEY = "joe-learner-edition-1";
+const STORAGE_KEY = "joe-learner-edition-2";
+const PREVIOUS_KEY = "joe-learner-edition-1";
+const ID_MAP = {
+  "1.14": "1.16",
+  "1.15": "1.14",
+  "1.16": "1.15",
+  "2.12": "2.13",
+  "2.13": "2.14",
+  "2.14": "2.15",
+  "2.15": "2.16",
+  "2.16": "2.17",
+  "2.17": "2.18",
+  "2.18": "2.12",
+  "3.6": "3.7",
+  "3.6a": "3.7a",
+  "3.6b": "3.7b",
+  "3.7": "3.8",
+  "3.8": "3.9",
+  "3.8a": "3.9a",
+  "3.8b": "3.9b",
+  "3.9": "3.6",
+  "4.4": "4.5",
+  "4.4a": "4.5a",
+  "4.4b": "4.5b",
+  "4.5": "4.6",
+  "4.5a": "4.6a",
+  "4.5b": "4.6b",
+  "4.6": "4.7",
+  "4.7": "4.9",
+  "4.7a": "4.9a",
+  "4.7b": "4.9b",
+  "4.8": "4.11",
+  "4.9": "4.10",
+  "4.15": "4.4",
+  "4.16": "4.8",
+  "4.18": "4.12",
+  "4.19": "4.13",
+};
+const RESET_CHECKS = new Set([
+  "1.0", "2.0", "3.0", "4.0", "5.0",
+  "2.12", "3.9", "3.11", "4.7a", "4.7b", "4.8", "4.15", "4.18", "5.9",
+]);
 
 const HUES = {
   beginner: { light: "#1f6b45", dark: "#9ed9bc" },
@@ -89,24 +130,43 @@ function buildIndex() {
   });
 }
 
+function checksFrom(rawChecks, migrate) {
+  const next = {};
+  for (const [id, marks] of Object.entries(rawChecks || {})) {
+    if (!Array.isArray(marks)) continue;
+    if (migrate && RESET_CHECKS.has(id)) continue;
+    const lessonId = migrate ? ID_MAP[id] || id : id;
+    const lesson = index.lessons.get(lessonId);
+    if (!lesson) continue;
+    const rubricLen = lesson.exercise?.rubric?.length || 0;
+    if (marks.length !== rubricLen) continue;
+    next[lessonId] = marks.map(Boolean);
+  }
+  return next;
+}
+
+function applyStored(raw, migrate) {
+  state.checks = checksFrom(raw.checks, migrate);
+  if (raw.theme === "light" || raw.theme === "dark" || raw.theme === "system") {
+    state.theme = raw.theme;
+  }
+  state.preview = Boolean(raw.preview);
+  const last = typeof raw.last === "string" ? (migrate ? ID_MAP[raw.last] || raw.last : raw.last) : null;
+  state.last = last && index.lessons.has(last) ? last : null;
+  state.seenUnlock = raw.seenUnlock && typeof raw.seenUnlock === "object" ? raw.seenUnlock : {};
+}
+
 function loadState() {
   try {
-    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    if (!raw || typeof raw !== "object") return;
-    if (raw.checks && typeof raw.checks === "object") {
-      for (const [id, marks] of Object.entries(raw.checks)) {
-        if (!Array.isArray(marks)) continue;
-        state.checks[id] = marks.map(Boolean);
-      }
+    const current = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (current && typeof current === "object") {
+      applyStored(current, false);
+      return;
     }
-    if (raw.theme === "light" || raw.theme === "dark" || raw.theme === "system") {
-      state.theme = raw.theme;
-    }
-    state.preview = Boolean(raw.preview);
-    state.last = typeof raw.last === "string" ? raw.last : null;
-    if (raw.seenUnlock && typeof raw.seenUnlock === "object") {
-      state.seenUnlock = raw.seenUnlock;
-    }
+    const previous = JSON.parse(localStorage.getItem(PREVIOUS_KEY) || "null");
+    if (!previous || typeof previous !== "object") return;
+    applyStored(previous, true);
+    save();
   } catch {
     /* keep defaults */
   }
@@ -116,6 +176,7 @@ function save() {
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
+      edition: 2,
       checks: state.checks,
       theme: state.theme,
       preview: state.preview,
@@ -688,7 +749,7 @@ function colophon() {
   const previewLabel = state.preview ? "Hide locked levels" : "Preview the path";
   const themeLabel = state.theme === "system" ? "Theme: system" : state.theme === "dark" ? "Theme: dark" : "Theme: light";
   return `<footer class="colophon">
-    <p>Edition 1. Progress stays in this browser. Python is only in Beginner examples. After that, the tools are Git, HTTP, and SQL.</p>
+    <p>Edition 2. Progress stays in this browser. Python is only in Beginner examples. After that, the tools are Git, HTTP, and SQL.</p>
     <button type="button" class="quiet small" data-action="theme">${themeLabel}</button>
     <button type="button" class="quiet small" data-action="preview" aria-pressed="${state.preview ? "true" : "false"}">${previewLabel}</button>
     <button type="button" class="quiet small" data-action="export">Export progress</button>
@@ -829,7 +890,7 @@ function setCheck(lessonId, boxIndex, value) {
 }
 
 function exportProgress() {
-  const blob = new Blob([JSON.stringify({ ...state }, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify({ edition: 2, ...state }, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -846,15 +907,7 @@ function importProgress(file) {
     try {
       const data = JSON.parse(String(reader.result));
       if (!data || typeof data !== "object" || !data.checks) throw new Error("shape");
-      state.checks = {};
-      for (const [id, marks] of Object.entries(data.checks)) {
-        if (!index.lessons.has(id) || !Array.isArray(marks)) continue;
-        state.checks[id] = marks.map(Boolean);
-      }
-      if (data.theme === "light" || data.theme === "dark" || data.theme === "system") state.theme = data.theme;
-      state.preview = Boolean(data.preview);
-      state.last = typeof data.last === "string" && index.lessons.has(data.last) ? data.last : null;
-      state.seenUnlock = data.seenUnlock && typeof data.seenUnlock === "object" ? data.seenUnlock : {};
+      applyStored(data, data.edition !== 2);
       save();
       applyTheme();
       session.banner = { text: "Progress imported into this browser." };

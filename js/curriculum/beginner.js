@@ -36,23 +36,38 @@ registerLevel({
             title: "One line you leave unchecked",
             start: "You can write small Python programs. You have never caught an exception on purpose.",
             steps: [
-              { t: "Check what you can show", d: "You check the program line and the data-structure line, because you can demonstrate both." },
+              { t: "Check what you can show", d: "You check the lines you can demonstrate, such as the program and the dictionary." },
               { t: "Leave the rest", d: "You leave the exception line unchecked and open the exceptions lesson. The gate stays shut until that line is true or you finish the must-know lessons." },
             ],
             end: "The check matches what you can do. It is not a guess about the next level.",
           },
           exercise: {
-            prompt: "Show each line with a small artifact you could hand to someone else: a short program, a data-structure choice with a reason, and a file-backed program that handles one error. Check a line only when that artifact exists.",
+            prompt: "Show each line with a small artifact you could hand to someone else. One program can cover several lines. Check a line only when that artifact shows it.",
             constraints: [
               "Python 3 is enough. The artifact can be tiny.",
-              "The data-structure line needs a reason, not only a name.",
+              "A data-structure line needs a reason, not only a name.",
               "Leave a line unchecked when you cannot show it yet.",
             ],
             done: "Each checked line has an artifact. Unchecked lines point you at the lesson that teaches them.",
             rubric: [
-              "I can write a small Python 3 program that takes input, makes a decision, repeats work, and returns a result from a function.",
-              "I can choose a list, dictionary, set, stack, queue, tree, or graph for a small problem and explain the choice.",
-              "I can read a traceback, raise and catch an exception with a next step, and save a record in a text file from more than one module.",
+              "I can write a program that reads input and prints a result, and I can run it again after one change.",
+              "I can name a value, tell its type, and convert between text and a number.",
+              "I can write an expression with arithmetic and comparisons, and I can represent money as integers.",
+              "I can branch on a boundary, and I can tell assignment from comparison.",
+              "I can write a loop with an accumulator and a condition that ends it.",
+              "I can write a function with parameters and a return value, and I can explain the call stack for one call.",
+              "I can use a list and a string: an index, a slice, and two names for one list.",
+              "I can choose a dictionary or a set and say why that collection fits.",
+              "I can use a stack and a queue and say which end each one removes from.",
+              "I can explain when linear search is enough and when binary search is valid.",
+              "I can sort a small list and say what stability means for equal keys.",
+              "I can say whether a solution grows as a constant, a line, or a nested loop, and refuse the nested one when the input will grow.",
+              "I can walk a tree with a base case, and I can say what happens when the base case is missing.",
+              "I can walk a graph, name a cycle, and say why a visited set is required.",
+              "I can read a traceback, predict an output, and keep a failing input.",
+              "I can raise a named error and catch only the error I have a next step for.",
+              "I can split a program into two modules, pass a record, and keep the import direction one way.",
+              "I can save records in a text file, start from a missing file, and skip a malformed line with a count.",
             ],
             model: [
               { type: "p", text: "There is no single right program. A passing artifact might be a contact line parsed in one module, a total computed in another, a FileNotFoundError that starts from empty data, and a sentence that says a set was chosen because membership was the question. If you cannot produce that, the exceptions lesson and the modules lesson are the next work, and this check stays incomplete." },
@@ -769,13 +784,13 @@ registerLevel({
       ],
     },
     {
-      id: "1.15",
+      id: "1.14",
       title: "Exceptions",
       summary: "Raise when the caller must hear about a failure, and catch only when you have a next step.",
       why: "Later lessons ask you to raise a documented exception and to skip a bad line. Those are the same idea.",
       lessons: [
         {
-          id: "1.15",
+          id: "1.14",
           title: "Exceptions",
           track: "must",
           concept: [
@@ -815,13 +830,13 @@ registerLevel({
       ],
     },
     {
-      id: "1.16",
+      id: "1.15",
       title: "Imports, modules, and records",
       summary: "More than one file, a name you import, and fields grouped into one record.",
-      why: "A later lesson splits the contact book into modules. This is the first time a program lives in more than one file.",
+      why: "A later lesson asks whether those modules have one reason to change.",
       lessons: [
         {
-          id: "1.16",
+          id: "1.15",
           title: "Imports, modules, and records",
           track: "must",
           concept: [
@@ -860,18 +875,18 @@ registerLevel({
       ],
     },
     {
-      id: "1.14",
+      id: "1.16",
       title: "Text files and a finished program",
       summary: "Data that outlives one run, and a contact book that uses the level.",
       why: "Separate exercises do not show how the pieces form a program. A program that forgets everything on exit has not yet met the reason people run software twice.",
       lessons: [
         {
-          id: "1.14",
+          id: "1.16",
           title: "Text files and a finished program",
           track: "must",
           thread: "Contact book",
           concept: [
-            { type: "p", text: "A file outlives one run. Open it, read or write, and always close it. `with open(path) as f` closes the file even when an error happens. A missing file is the `FileNotFoundError` you already catch in [[1.15]]. A contact is the record from [[1.16]], not two lists that can drift apart." },
+            { type: "p", text: "A file outlives one run. Open it, read or write, and always close it. `with open(path) as f` closes the file even when an error happens. A missing file is the `FileNotFoundError` you already catch in [[1.14]]. A contact is the record from [[1.15]], not two lists that can drift apart." },
             { type: "p", text: "One record per line. Split fields with a delimiter you chose and can describe. Reject a line that does not have the fields you expect. Skipping it silently, with a count you show the user, is a reasonable policy when the file is data you own. Hiding the count is not." },
             { type: "p", text: "A missing file is a case to handle (`FileNotFoundError`), usually by starting from empty data or telling the user the path." },
             { type: "p", text: "Before coding a whole program, write one sentence for the job, a list of commands, the data structure, and the functions. Write the function list before the command loop." },
@@ -921,12 +936,12 @@ registerLevel({
           career: true,
           concept: [
             { type: "p", text: "The next level asks you to work on a team: history, other people's code, tests, and review. The evidence is work you can point at, not a title and not hours spent." },
-            { type: "p", text: "Ask for feedback on a specific artifact. \"How do I get better?\" is hard to answer. \"Does this contact book still load after a bad line?\" is a question with an object." },
+            { type: "p", text: "The reader can be a friend who already works on a team, a community forum, or a mentor. Ask for feedback on a specific artifact. \"How do I get better?\" is hard to answer. \"Does this contact book still load after a bad line?\" is a question with an object." },
             { type: "p", text: "The case for New graduate is the Beginner outcomes: a small program, a justified data structure, a traceback you can read, and a program that remembers its data. Say which of those you can show, and which lesson is still open." },
           ],
           example: {
             title: "A question with the program attached",
-            start: "You want a friend who already works on a team to look at the contact book.",
+            start: "You want a friend, a community forum, or a mentor to look at the contact book.",
             steps: [
               { t: "The artifact", d: "Send the two files and the three manual sessions: a normal run, an empty start, and a bad line." },
               { t: "The question", d: "`Can you load this and tell me whether the bad line is skipped and counted? I am not asking for a job title. I want to know if this is the outcome the next level assumes.`" },
@@ -934,7 +949,7 @@ registerLevel({
             end: "They can answer from the program. You can act on the answer.",
           },
           exercise: {
-            prompt: "Write a short note you could send with your contact book. Name two Beginner outcomes you can show, one outcome that is still thin, and the question you want answered. Then write two sentences that make the case for starting New graduate, using outcomes rather than a title.",
+            prompt: "Write a short note you could send with your contact book to a friend, a community forum, or a mentor. Name two Beginner outcomes you can show, one outcome that is still thin, and the question you want answered. Then write two sentences that make the case for starting New graduate, using outcomes rather than a title.",
             constraints: [
               "Attach the claim to the contact book or another program you wrote in this level.",
               "The question names a behavior the reader can check.",

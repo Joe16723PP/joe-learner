@@ -51,8 +51,18 @@ registerLevel({
             done: "A packet another person could review, with unchecked lines pointing at the lesson you still need.",
             rubric: [
               "I can branch, commit with a why, and resolve a conflict or rebase onto the main line.",
-              "I can trace one behavior in code I did not write, add a failing test, and debug from a reproduction.",
-              "I can keep a secret out of the repo and out of a prompt, parameterize a query, separate a user-facing error from a log, review a change, run one check command, and name how a release moves across environments with a rollback.",
+              "I can trace one behavior in code I did not write, from the entry point to the data it changes.",
+              "I can add a test that fails for a bug and passes after the fix.",
+              "I can debug from a reproduction and keep that reproduction as a test.",
+              "I can lay out a project someone else can clone, install, and test, with configuration from the environment.",
+              "I can parse JSON and CSV and reject a bad element with a reason.",
+              "I can choose an HTTP status and a timeout behavior a caller can act on.",
+              "I can write a query that stays in the database, use a transaction, and say what a join is for.",
+              "I can separate a user-facing error from a log line, and keep a secret out of the log.",
+              "I can review a small change, including a generated diff, with a specific comment and a condition for approval.",
+              "I can keep a secret out of the repository and out of a prompt, and parameterize a query or command.",
+              "I can run one check command before sharing a change.",
+              "I can describe how a release moves from local to the shared line to staging to production, and how a rollback differs from a data repair.",
             ],
             model: [
               { type: "p", text: "A passing packet is a branch that strips spaces and then rejects letters in a phone, with both intentions in the commit message, a test that failed first, a log line without the phone number, and a README command that exits non-zero when that test is broken. The rollback sentence names a redeploy. If any of that is missing, the matching lesson is still the work." },
@@ -878,13 +888,13 @@ Authorization: Bearer live-token-pasted-into-the-prompt
       ],
     },
     {
-      id: "2.18",
+      id: "2.12",
       title: "Deployment and environments",
       summary: "What a release is, from your machine to production, and how you undo it.",
       why: "A later lesson asks for a release and a rollback note. Those words name environments, not a feeling that the code is done.",
       lessons: [
         {
-          id: "2.18",
+          id: "2.12",
           title: "Deployment and environments",
           track: "must",
           concept: [
@@ -925,21 +935,21 @@ Authorization: Bearer live-token-pasted-into-the-prompt
       ],
     },
     {
-      id: "2.12",
+      id: "2.13",
       title: "Modules, coupling, and cohesion",
       summary: "One reason to change, and a direction for imports.",
       why: "\"Add a field\" becomes a twelve-file change when boundaries were accidental. First jobs are full of that tax.",
       lessons: [
         {
-          id: "2.12",
+          id: "2.13",
           title: "Modules, coupling, and cohesion",
           track: "should",
           thread: "Contact book",
           concept: [
-            { type: "p", text: "A module should have one reason to change. If a reader would describe the file with two unrelated sentences, the file is two modules." },
-            { type: "p", text: "Coupling is who else must change when this module changes. Cohesion is whether the pieces in a module belong in one description." },
-            { type: "p", text: "Callers should depend on a small set of functions or operations, not on the private layout of another module. If a caller builds your filenames or reaches into your dictionary keys, it is coupled to a layout you should still be free to change." },
-            { type: "p", text: "Split a file when a reader would describe it with two unrelated sentences. Do not split a file only to hit a line count." },
+            { type: "p", text: "Beginner already split a program into modules and passed a record between them. `book.py` imports `records.py`. `records.py` does not import `book.py`. This lesson starts from that split." },
+            { type: "p", text: "The new question is cohesion and coupling. A module should have one reason to change. If a reader would describe the file with two unrelated sentences, the file is two modules. Coupling is who else must change when this module changes." },
+            { type: "p", text: "Callers should depend on a small set of functions, not on the private layout of another module. If a caller builds your filenames or reaches into your dictionary keys, it is coupled to a layout you should still be free to change." },
+            { type: "p", text: "Import direction was already one way. Raise the bar: name the cycle you would refuse when a new field needs a new module, and do not split a file only to hit a line count." },
           ],
           example: {
             title: "A file that parses and sends mail",
@@ -951,33 +961,33 @@ Authorization: Bearer live-token-pasted-into-the-prompt
             end: "A format change touches the parser. A provider change touches delivery. Neither change is a tour of the whole program.",
           },
           exercise: {
-            prompt: "Split the contact book into storage, parsing, and command handling, with import direction only inward toward storage. Describe the change \"add an email field\" by listing which module owns the field and which modules must be touched only to pass it through.",
+            prompt: "The contact book already has `records.py` and `book.py`, with the import pointing from the command file toward the records. Add a third module only if one of those files now has two reasons to change. Describe the change \"add an email field\": which module owns the field, which modules only pass it through, and one import you refuse.",
             constraints: [
-              "Command handling does not parse lines and does not open the file itself.",
-              "Parsing does not import command handling.",
+              "Start from the two-file split. Do not re-teach how to create a file or a record.",
+              "Parsing does not import command handling. Name the cycle that would create.",
               "The email description names an owner and the pass-through modules.",
             ],
-            done: "The three modules have one reason each, imports point inward toward storage, and the email change has an owner.",
+            done: "Each module has one reason, imports stay one way, an import is refused, and the email change has an owner.",
             rubric: [
-              "Storage, parsing, and command handling are separate, and imports point inward toward storage.",
-              "I can state each module's one reason to change.",
+              "I started from the two-file split and stated each module's one reason to change.",
+              "I named an import I refuse, and parsing does not import command handling.",
               "For an email field, I named the module that owns it and the modules that only pass it through.",
             ],
             model: [
-              { type: "p", text: "Storage owns the field: the record shape and the file or table. Parsing learns the line format so it can read and write the extra column. Command handling passes the value through from the command to storage and back out when listing. Parsing and commands change because the data crosses them, not because they own the meaning of email." },
+              { type: "p", text: "Records still own the line format. The command file still owns input and output. Mail delivery is the third module, because sending mail is a second sentence. Storage, meaning the record, owns the email field. Parsing learns the extra column. Command handling passes the value through. Delivery may call a function that returns a contact. The parser does not import the mailer, and neither imports the command file. That cycle is the one you refuse." },
             ],
           },
         },
       ],
     },
     {
-      id: "2.13",
+      id: "2.14",
       title: "Concurrency as a concept",
       summary: "Lost updates, locks, and one owner of the data.",
       why: "Juniors meet races in caches, background jobs, and UI callbacks. Naming the failure is the goal here. Designing concurrent systems is later work.",
       lessons: [
         {
-          id: "2.13",
+          id: "2.14",
           title: "Concurrency as a concept",
           track: "should",
           concept: [
@@ -1017,13 +1027,13 @@ Authorization: Bearer live-token-pasted-into-the-prompt
       ],
     },
     {
-      id: "2.14",
+      id: "2.15",
       title: "Measuring",
       summary: "A question, a baseline, and the spread across a few runs.",
       why: "\"This feels slow\" leads people to rewrite the wrong function.",
       lessons: [
         {
-          id: "2.14",
+          id: "2.15",
           title: "Measuring",
           track: "should",
           concept: [
@@ -1063,13 +1073,13 @@ Authorization: Bearer live-token-pasted-into-the-prompt
       ],
     },
     {
-      id: "2.15",
+      id: "2.16",
       title: "Writing for the next reader",
       summary: "Names, constraints, and a README that can stand alone.",
       why: "The next reader is often the author, months later, under pressure.",
       lessons: [
         {
-          id: "2.15",
+          id: "2.16",
           title: "Writing for the next reader",
           track: "should",
           thread: "Contact book",
@@ -1145,13 +1155,13 @@ Authorization: Bearer live-token-pasted-into-the-prompt
       ],
     },
     {
-      id: "2.16",
+      id: "2.17",
       title: "Dependencies and reproducible setup",
       summary: "A declared, pinned set that installs on a clean machine.",
       why: "\"Works on my machine\" is often an undeclared dependency or an unpinned one.",
       lessons: [
         {
-          id: "2.16",
+          id: "2.17",
           title: "Dependencies and reproducible setup",
           track: "should",
           concept: [
@@ -1189,13 +1199,13 @@ Authorization: Bearer live-token-pasted-into-the-prompt
       ],
     },
     {
-      id: "2.17",
+      id: "2.18",
       title: "Locales, text, and access",
       summary: "Strings, instants, and signals that are not color alone.",
       why: "Retrofitting strings, dates, and unlabeled controls is costly. The habit is cheap if it starts with the first user-facing feature.",
       lessons: [
         {
-          id: "2.17",
+          id: "2.18",
           title: "Locales, text, and access",
           track: "should",
           concept: [
@@ -1258,7 +1268,7 @@ Authorization: Bearer live-token-pasted-into-the-prompt
             end: "They can answer from the diff. Your case for Junior is that answer plus the outcomes you can repeat.",
           },
           exercise: {
-            prompt: "Write the note you would send with a change packet. Name two New graduate must-know outcomes you can show, one that is still thin, and the question you want answered. Then write two sentences that make the case for starting Junior.",
+            prompt: "Write the review request you would attach to a change packet for a teammate who will run the check command. Point at the diff, the test that failed first, and the sentence about how the change moves across environments. Name two New graduate outcomes you can show and one that is still thin. Then write two sentences that make the case for starting Junior.",
             constraints: [
               "The question points at the diff, the test, or the log line.",
               "The thin outcome is a lesson you can name.",
