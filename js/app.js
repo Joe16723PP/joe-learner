@@ -794,7 +794,7 @@ function colophon() {
   const previewLabel = state.preview ? "Hide locked levels" : "Preview the path";
   const themeLabel = state.theme === "system" ? "Theme: system" : state.theme === "dark" ? "Theme: dark" : "Theme: light";
   return `<footer class="colophon">
-    <p>Edition 2. Progress stays in this browser. Python is only in Beginner examples. After that, the tools are Git, HTTP, and SQL.</p>
+    <p>Edition 2. Progress stays in this browser. JavaScript is only in Beginner examples. After that, the tools are Git, HTTP, and SQL.</p>
     <div class="colophon-tools">
       <button type="button" class="quiet small" data-action="theme">${themeLabel}</button>
       <button type="button" class="quiet small" data-action="preview" aria-pressed="${state.preview ? "true" : "false"}">${previewLabel}</button>

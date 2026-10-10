@@ -4,7 +4,7 @@ A static teaching site for one development path, from a first program to technic
 
 Levels describe the work, not a job title. A learner moves on by demonstrating outcomes. The next level stays closed until the must-know exercises of the current level are done. Should-know work can wait.
 
-Concepts stay language-agnostic. Python 3 appears only in Beginner examples, where a language is required to show the idea. From New graduate upward, the subject is engineering practice. Examples use shared tools (Git, HTTP, SQL) and do not assume one company stack.
+Concepts stay language-agnostic. JavaScript appears only in Beginner examples, where a language is required to show the idea. From New graduate upward, the subject is engineering practice. Examples use shared tools (Git, HTTP, SQL) and do not assume one company stack.
 
 This is a backend-leaning generalist path. The scenarios are a contact book, an orders service, and a shared checkout. Frontend, mobile, data, site reliability, and security are named as specializations after Junior. They are not a second curriculum. People management — feedback conversations, performance reviews, and onboarding — is out of scope. Technical leader names that boundary and does not teach it.
 
@@ -60,7 +60,7 @@ Three project threads run through the lessons: the **contact book** (Beginner in
 
 For people who can use a computer and want to learn to program. No prior coding is assumed.
 
-When they finish, they can read and write small Python 3 programs, choose a fitting data structure and explain the choice, trace a program and fix simple logic bugs, raise and catch an exception, split a small program across modules that pass records, and break a problem into functions that save data in a text file.
+When they finish, they can read and write small JavaScript programs, choose a fitting data structure and explain the choice, trace a program and fix simple logic bugs, raise and catch an exception, split a small program across modules that pass records, and break a problem into functions that save data in a text file.
 
 18 modules, 20 lessons. 18 lessons are must-know. Placement and the evidence lesson do not lock New graduate.
 
@@ -242,7 +242,7 @@ A lesson is complete when every rubric line is checked. On a small screen the mo
 Serve the folder with any static file server, then open the site:
 
 ```bash
-python3 -m http.server
+npx serve -l 8000
 ```
 
 Then visit `http://127.0.0.1:8000/`.

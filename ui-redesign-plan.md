@@ -517,7 +517,7 @@ Run from the project directory:
 
 ```bash
 cd /Users/jirotjoe/Projects/joe-learner
-python3 -m http.server 4173
+npx serve -l 4173
 ```
 
 ### Home page

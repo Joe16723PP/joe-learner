@@ -2,11 +2,11 @@
 
 ## Quick start
 
-This is a dependency-free static curriculum site. Read `README.md` for the lesson model and runbook. Open `index.html` directly or serve this directory with `python3 -m http.server` before verifying browser behavior.
+This is a dependency-free static curriculum site. Read `README.md` for the lesson model and runbook. Open `index.html` directly or serve this directory with `npx serve` before verifying browser behavior.
 
 ## Boundaries
 
-- Keep the curriculum language-agnostic except where the README explicitly allows Python examples.
+- Keep the curriculum language-agnostic except where the README explicitly allows JavaScript examples.
 - Preserve the level gates, must-know versus should-know distinction, and browser self-check behavior.
 - Keep learner progress local to the existing browser-storage contract; do not add network persistence.
 - Do not add a build dependency or framework for a static-site change.

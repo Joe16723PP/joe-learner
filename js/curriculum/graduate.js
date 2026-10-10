@@ -104,7 +104,7 @@ registerLevel({
             end: "The merged line carries both intentions, and the history still explains why each sentence exists.",
           },
           exercise: {
-            prompt: "Start from a shared repository that contains `format_phone(raw)`. On branch A, change the function to strip spaces. On branch B, change the same lines to reject letters. Merge B into A, resolve the conflict so both behaviors exist (strip spaces, then reject if letters remain), and write a commit message that states why both rules are there.",
+            prompt: "Start from a shared repository that contains `formatPhone(raw)`. On branch A, change the function to strip spaces. On branch B, change the same lines to reject letters. Merge B into A, resolve the conflict so both behaviors exist (strip spaces, then reject if letters remain), and write a commit message that states why both rules are there.",
             constraints: [
               "Both changes must touch the same lines so Git reports a conflict.",
               "The resolution strips spaces first, then rejects the result if any letter remains.",
@@ -117,8 +117,8 @@ registerLevel({
               "`git log` still shows both parents' work in a way a teammate can read.",
             ],
             model: [
-              { type: "p", text: "One resolution, in neutral code:" },
-              { type: "pre", lang: "text", code: "format_phone(raw):\n  stripped = raw with spaces removed\n  if any character in stripped is a letter:\n    reject\n  return stripped\n" },
+              { type: "p", text: "One resolution, in JavaScript:" },
+              { type: "pre", lang: "javascript", code: "function formatPhone(raw) {\n  const stripped = raw with spaces removed;\n  if (any character in stripped is a letter) throw new Error(\"letters\");\n  return stripped;\n}\n" },
               { type: "p", text: "A message that states the why: `Accept spaced numbers and still reject letters.`" },
             ],
           },
@@ -167,173 +167,189 @@ registerLevel({
             files: [
               {
                 name: "tracker/main",
-                code: `load store from "issues.db" or start empty
-next_id = highest stored id, or 1 if the file is empty
+                code: `let store = load("issues.db"); // or start empty
+let nextId = highest stored id, or 1 if the file is empty;
 
-loop:
-  read a line
-  if line is empty:
-    continue
-  parts = split line on spaces, first word is the command
+while (true) {
+  const line = readLine();
+  if (line === "") continue;
+  const parts = line.split(" ");
+  const command = parts[0];
 
-  if command is "add":
-    title = the rest of the line
-    issue = issues.create(store, title, next_id)
-    next_id = issue.id + 1
-    print issue.id, issue.title, issue.status
+  if (command === "add") {
+    const title = the rest of the line;
+    const issue = issues.create(store, title, nextId);
+    nextId = issue.id + 1;
+    console.log(issue.id, issue.title, issue.status);
+  }
 
-  if command is "done":
-    id_text = second word
-    issues.mark_done(store, id_text)
-    print "done", id_text
+  if (command === "done") {
+    const idText = parts[1];
+    issues.markDone(store, idText);
+    console.log("done", idText);
+  }
 
-  if command is "assign":
-    id_text = second word
-    owner = third word
-    issues.assign(store, id_text, owner)
-    print "assigned", id_text, owner
+  if (command === "assign") {
+    const idText = parts[1];
+    const owner = parts[2];
+    issues.assign(store, idText, owner);
+    console.log("assigned", idText, owner);
+  }
 
-  if command is "list":
-    which = second word or "open"
-    for issue in issues.select(store, which):
-      print issue.id, issue.status, issue.title
+  if (command === "list") {
+    const which = parts[1] or "open";
+    for (const issue of issues.select(store, which)) {
+      console.log(issue.id, issue.status, issue.title);
+    }
+  }
 
-  if command is "show":
-    id_text = second word
-    issue = issues.find(store, id_text)
-    if issue is missing:
-      print "missing", id_text
-    else:
-      print issue.id, issue.title, issue.status, issue.owner
-      for note in issue.notes:
-        print "note", note
+  if (command === "show") {
+    const idText = parts[1];
+    const issue = issues.find(store, idText);
+    if (issue is missing) {
+      console.log("missing", idText);
+    } else {
+      console.log(issue.id, issue.title, issue.status, issue.owner);
+      for (const note of issue.notes) console.log("note", note);
+    }
+  }
 
-  if command is "note":
-    id_text = second word
-    text = the rest of the line
-    issues.add_note(store, id_text, text)
+  if (command === "note") {
+    const idText = parts[1];
+    const text = the rest of the line;
+    issues.addNote(store, idText, text);
+  }
 
-  if command is "reopen":
-    id_text = second word
-    issues.reopen(store, id_text)
-    print "open", id_text
+  if (command === "reopen") {
+    const idText = parts[1];
+    issues.reopen(store, idText);
+    console.log("open", idText);
+  }
 
-  if command is "quit":
-    store.save("issues.db")
-    stop
-
-  else:
-    print "unknown command"
+  if (command === "quit") {
+    store.save("issues.db");
+    break;
+  } else {
+    console.log("unknown command");
+  }
+}
 `,
               },
               {
                 name: "tracker/issues",
-                code: `create(store, title, next_id):
-  if title is blank:
-    raise EmptyTitle
-  issue = {
-    id: next_id,
+                code: `function create(store, title, nextId) {
+  if (title is blank) throw new EmptyTitle();
+  const issue = {
+    id: nextId,
     title: title,
     status: "open",
     owner: "unassigned",
-    notes: empty list
-  }
-  store.insert(issue)
-  return issue
+    notes: [],
+  };
+  store.insert(issue);
+  return issue;
+}
 
-mark_done(store, id_text):
-  issue = store.find(id_text)
-  if issue is missing:
-    raise MissingIssue
-  if issue.status is "done":
-    return issue
-  issue.status = "done"
-  store.update(issue)
-  return issue
+function markDone(store, idText) {
+  const issue = store.find(idText);
+  if (issue is missing) throw new MissingIssue();
+  if (issue.status === "done") return issue;
+  issue.status = "done";
+  store.update(issue);
+  return issue;
+}
 
-assign(store, id_text, owner):
-  issue = store.find(id_text)
-  if issue is missing:
-    raise MissingIssue
-  if owner is blank:
-    raise EmptyOwner
-  issue.owner = owner
-  store.update(issue)
-  return issue
+function assign(store, idText, owner) {
+  const issue = store.find(idText);
+  if (issue is missing) throw new MissingIssue();
+  if (owner is blank) throw new EmptyOwner();
+  issue.owner = owner;
+  store.update(issue);
+  return issue;
+}
 
-add_note(store, id_text, text):
-  issue = store.find(id_text)
-  if issue is missing:
-    raise MissingIssue
-  if text is blank:
-    return issue
-  issue.notes.append(text)
-  store.update(issue)
-  return issue
+function addNote(store, idText, text) {
+  const issue = store.find(idText);
+  if (issue is missing) throw new MissingIssue();
+  if (text is blank) return issue;
+  issue.notes.push(text);
+  store.update(issue);
+  return issue;
+}
 
-reopen(store, id_text):
-  issue = store.find(id_text)
-  if issue is missing:
-    raise MissingIssue
-  issue.status = "open"
-  store.update(issue)
-  return issue
+function reopen(store, idText) {
+  const issue = store.find(idText);
+  if (issue is missing) throw new MissingIssue();
+  issue.status = "open";
+  store.update(issue);
+  return issue;
+}
 
-select(store, which):
-  rows = store.all()
-  if which is "all":
-    return rows
-  if which is "done":
-    return rows where status is "done"
-  return rows where status is "open"
+function select(store, which) {
+  const rows = store.all();
+  if (which === "all") return rows;
+  if (which === "done") return rows where status is "done";
+  return rows where status is "open";
+}
 
-find(store, id_text):
-  return store.find(id_text)
+function find(store, idText) {
+  return store.find(idText);
+}
 `,
               },
               {
                 name: "tracker/store",
-                code: `memory = empty list
+                code: `let memory = [];
 
-insert(issue):
-  memory.append(copy of issue)
+function insert(issue) {
+  memory.push(copy of issue);
+}
 
-update(issue):
-  for index, row in memory:
-    if text of row.id equals text of issue.id:
-      memory[index] = copy of issue
-      return
-  raise MissingIssue
+function update(issue) {
+  for (let index = 0; index < memory.length; index++) {
+    const row = memory[index];
+    if (String(row.id) === String(issue.id)) {
+      memory[index] = copy of issue;
+      return;
+    }
+  }
+  throw new MissingIssue();
+}
 
-find(id_text):
-  for row in memory:
-    if text of row.id equals text of id_text:
-      return copy of row
-  return missing
+function find(idText) {
+  for (const row of memory) {
+    if (String(row.id) === String(idText)) return copy of row;
+  }
+  return missing;
+}
 
-all():
-  return copy of memory
+function all() {
+  return copy of memory;
+}
 
-save(path):
+function save(path) {
   write one line per issue:
     id, status, owner, title separated by "|"
     then one "note|" line for each note
   a title is not allowed to contain "|"
+}
 
-load(path):
-  if the file is missing:
-    memory = empty list
-    return
+function load(path) {
+  if (the file is missing) {
+    memory = [];
+    return;
+  }
   read lines
   when a line has four fields, start a new issue
-  when a line starts with "note|", append to the current issue
+  when a line starts with "note|", push onto the current issue
   lines with any other shape are skipped
   this loader does not count skipped lines
+}
 `,
               },
             ],
             model: [
-              { type: "p", text: "Entry point: the command loop in `tracker/main`. `done ID` calls `issues.mark_done`, which loads the issue, sets `status` to `done` unless it is already done, and `store.update` replaces the record. `quit` is what writes the file. Two questions the code leaves open: what should happen when `done` is asked to mark a missing id (the function raises, and `main` does not catch it), and whether `owner` is supposed to mean a person who may close the issue or only a label, since `mark_done` never reads `owner`." },
+              { type: "p", text: "Entry point: the command loop in `tracker/main`. `done ID` calls `issues.markDone`, which loads the issue, sets `status` to `done` unless it is already done, and `store.update` replaces the record. `quit` is what writes the file. Two questions the code leaves open: what should happen when `done` is asked to mark a missing id (the function raises, and `main` does not catch it), and whether `owner` is supposed to mean a person who may close the issue or only a label, since `markDone` never reads `owner`." },
             ],
           },
         },
@@ -354,33 +370,33 @@ load(path):
             { type: "p", text: "Three kinds of case: typical, boundary, and failure. A typical case shows the ordinary path. A boundary sits on a value where the rule changes. A failure is an input the function must reject." },
             { type: "p", text: "Test through the public function. Reaching into local steps makes tests break when the insides are rearranged even if the behavior held." },
             { type: "p", text: "A bug fix starts by showing a failing test when the defect is deterministic and local. The test fails on the old code and passes on the new code. That order is the evidence." },
-            { type: "p", text: "Name tests for the situation: `test_rejects_non_leap_feb_29`. Keep tests deterministic: no network, and no \"today's date\" unless the clock is passed in." },
+            { type: "p", text: "Name tests for the situation: `test(\"rejects a non-leap 29 Feb\")`. Keep tests deterministic: no network, and no \"today's date\" unless the clock is passed in." },
           ],
           example: {
             title: "Tests first for a pass mark",
             start: "A function `passed(score)` does not exist yet. The rule is: scores from 0 to 100 inclusive, pass at 60 and above, reject anything outside the range.",
             steps: [
-              { t: "Write the claims", d: "Typical: 80 passes. Boundary: 60 passes and 59 fails. Failure: -1 and 101 raise a documented error. Names: `test_passes_at_60`, `test_fails_at_59`, `test_rejects_101`." },
-              { t: "Watch them fail", d: "Against a stub that always returns true, `test_fails_at_59` fails. That is the point of writing the test first. A test that passes against a stub that ignores its input is not testing the rule." },
+              { t: "Write the claims", d: "Typical: 80 passes. Boundary: 60 passes and 59 fails. Failure: -1 and 101 raise a documented error. Names: `test(\"passes at 60\")`, `test(\"fails at 59\")`, `test(\"rejects 101\")`." },
+              { t: "Watch them fail", d: "Against a stub that always returns true, `test(\"fails at 59\")` fails. That is the point of writing the test first. A test that passes against a stub that ignores its input is not testing the rule." },
               { t: "Implement until they pass", d: "The function returns a boolean for in-range scores and raises for the rest. It does not read the clock and it does not ask for input." },
             ],
             end: "The four tests pass. The names still describe situations if you delete the function bodies and read only the test list.",
           },
           exercise: {
-            prompt: "Specify `parse_date(text) -> (year, month, day)` for `YYYY-MM-DD`. Write tests first for a valid date, 29 Feb 2024, 29 Feb 2023, 31 Apr 2024, and `2020/01/01`. The last three must fail against a stub that accepts any 10-character string. Then implement until the tests pass. Invalid dates raise a documented exception. They do not return `None`.",
+            prompt: "Specify `parseDate(text)` for `YYYY-MM-DD`, returning `{ year, month, day }`. Write tests first for a valid date, 29 Feb 2024, 29 Feb 2023, 31 Apr 2024, and `2020/01/01`. The last three must fail against a stub that accepts any 10-character string. Then implement until the tests pass. Invalid dates raise a documented exception. They do not return `null`.",
             constraints: [
-              "Tests call `parse_date` only. They do not inspect helper steps.",
+              "Tests call `parseDate` only. They do not inspect helper steps.",
               "The stub stage is real: run the last three tests against the stub and record the failure before you implement the rules.",
               "No test uses today's date or the network.",
             ],
             done: "The valid date and 29 Feb 2024 pass. 29 Feb 2023, 31 Apr 2024, and `2020/01/01` raise the documented exception. You saw the last three fail against the stub first.",
             rubric: [
               "I wrote the five tests before the real implementation, and the last three failed against a stub that accepts any 10-character string.",
-              "A valid `YYYY-MM-DD` and 29 Feb 2024 return `(year, month, day)`.",
-              "29 Feb 2023, 31 Apr 2024, and `2020/01/01` raise a documented exception and do not return None.",
+              "A valid `YYYY-MM-DD` and 29 Feb 2024 return `{ year, month, day }`.",
+              "29 Feb 2023, 31 Apr 2024, and `2020/01/01` raise a documented exception and do not return null.",
             ],
             model: [
-              { type: "p", text: "The stub fails the leap-year case, the impossible day, and the slash format because all three are 10 characters and the stub returns a tuple anyway. The implementation checks the hyphens, the numeric fields, the month lengths, and the leap rule from [[1.6]]. Name the exception in one place, for example `InvalidDate`, and use it for every rejection." },
+              { type: "p", text: "The stub fails the leap-year case, the impossible day, and the slash format because all three are 10 characters and the stub returns an object anyway. The implementation checks the hyphens, the numeric fields, the month lengths, and the leap rule from [[1.6]]. Name the exception in one place, for example `InvalidDate`, and use it for every rejection." },
             ],
           },
         },
@@ -947,7 +963,7 @@ Authorization: Bearer live-token-pasted-into-the-prompt
           track: "should",
           thread: "Contact book",
           concept: [
-            { type: "p", text: "Beginner already split a program into modules and passed a record between them. `book.py` imports `records.py`. `records.py` does not import `book.py`. This lesson starts from that split." },
+            { type: "p", text: "Beginner already split a program into modules and passed a record between them. `book.mjs` imports `records.mjs`. `records.mjs` does not import `book.mjs`. This lesson starts from that split." },
             { type: "p", text: "The new question is cohesion and coupling. A module should have one reason to change. If a reader would describe the file with two unrelated sentences, the file is two modules. Coupling is who else must change when this module changes." },
             { type: "p", text: "Callers should depend on a small set of functions, not on the private layout of another module. If a caller builds your filenames or reaches into your dictionary keys, it is coupled to a layout you should still be free to change." },
             { type: "p", text: "Import direction was already one way. Raise the bar: name the cycle you would refuse when a new field needs a new module, and do not split a file only to hit a line count." },
@@ -962,7 +978,7 @@ Authorization: Bearer live-token-pasted-into-the-prompt
             end: "A format change touches the parser. A provider change touches delivery. Neither change is a tour of the whole program.",
           },
           exercise: {
-            prompt: "The contact book already has `records.py` and `book.py`, with the import pointing from the command file toward the records. Add a third module only if one of those files now has two reasons to change. Describe the change \"add an email field\": which module owns the field, which modules only pass it through, and one import you refuse.",
+            prompt: "The contact book already has `records.mjs` and `book.mjs`, with the import pointing from the command file toward the records. Add a third module only if one of those files now has two reasons to change. Describe the change \"add an email field\": which module owns the field, which modules only pass it through, and one import you refuse.",
             constraints: [
               "Start from the two-file split. Do not re-teach how to create a file or a record.",
               "Parsing does not import command handling. Name the cycle that would create.",
@@ -1094,8 +1110,8 @@ Authorization: Bearer live-token-pasted-into-the-prompt
             title: "A comment that earns its place",
             start: "Two comments above two lines.",
             steps: [
-              { t: "Restates the line", d: "`# add one to count` above `count = count + 1`. Delete it. The line already said that." },
-              { t: "Records a constraint", d: "`# Phones are stored without spaces. Display formatting happens at the edge.` above a strip. The next reader needs the constraint, because the line only shows the strip." },
+              { t: "Restates the line", d: "`// add one to count` above `count = count + 1`. Delete it. The line already said that." },
+              { t: "Records a constraint", d: "`// Phones are stored without spaces. Display formatting happens at the edge.` above a strip. The next reader needs the constraint, because the line only shows the strip." },
             ],
             end: "One comment remains, and it says something the code cannot.",
           },
@@ -1111,35 +1127,32 @@ Authorization: Bearer live-token-pasted-into-the-prompt
               {
                 caption: "Before",
                 lang: "text",
-                code: `function handle(data):
-  # step 1: get the name
-  tmp = data["name"]
-  flag = false
-  if tmp is missing:
-    flag = false
-  else:
-    tmp = tmp with outer spaces removed
-    if length of tmp is 0:
-      flag = false
-    else:
-      flag = true
-  if flag is false:
-    return error "name required"
-  # step 2: get the phone
-  tmp2 = data["phone"]
-  if tmp2 is missing:
-    return error "phone required"
-  tmp2 = tmp2 with spaces removed
-  if tmp2 is empty:
-    return error "phone required"
-  for each character in tmp2:
-    if character is not a digit and character is not "+":
-      return error "phone invalid"
-  # step 3: build the result
-  out = empty record
-  out["name"] = tmp
-  out["phone"] = tmp2
-  return out
+                code: `function handle(data) {
+  // step 1: get the name
+  let tmp = data["name"];
+  let flag = false;
+  if (tmp is missing) {
+    flag = false;
+  } else {
+    tmp = tmp with outer spaces removed;
+    if (tmp.length === 0) flag = false;
+    else flag = true;
+  }
+  if (flag === false) return error "name required";
+  // step 2: get the phone
+  let tmp2 = data["phone"];
+  if (tmp2 is missing) return error "phone required";
+  tmp2 = tmp2 with spaces removed;
+  if (tmp2 is empty) return error "phone required";
+  for (const character of tmp2) {
+    if (character is not a digit && character is not "+") return error "phone invalid";
+  }
+  // step 3: build the result
+  const out = {};
+  out["name"] = tmp;
+  out["phone"] = tmp2;
+  return out;
+}
 `,
               },
             ],
@@ -1149,7 +1162,7 @@ Authorization: Bearer live-token-pasted-into-the-prompt
               "Any remaining comment records a constraint the code cannot show.",
             ],
             model: [
-              { type: "p", text: "One split: `require_name` and `require_phone`, called by `normalize_contact`. Tests: `test_rejects_missing_name`, `test_rejects_blank_name`, `test_rejects_phone_with_letters`, `test_strips_spaces_from_phone`. No step comments. A comment that earns a place would be the constraint that a leading `+` is allowed and letters are not, if the code's character test is hard to see. Often the test name is enough and the comment can go." },
+              { type: "p", text: "One split: `requireName` and `requirePhone`, called by `normalizeContact`. Tests: `test(\"rejects a missing name\")`, `test(\"rejects a blank name\")`, `test(\"rejects a phone with letters\")`, `test(\"strips spaces from a phone\")`. No step comments. A comment that earns a place would be the constraint that a leading `+` is allowed and letters are not, if the code's character test is hard to see. Often the test name is enough and the comment can go." },
             ],
           },
         },
