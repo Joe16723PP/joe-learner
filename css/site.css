@@ -1,11 +1,11 @@
 :root {
   color-scheme: light;
-  --bg: #efe6d8;
-  --bg-2: #e6dccb;
-  --paper: #fbf6ee;
-  --ink: #1c1915;
+  --bg: #f5efe5;
+  --bg-2: #ebe3d7;
+  --paper: #fffdf9;
+  --ink: #171614;
   --muted: #4e4942;
-  --line: #d9d0c2;
+  --line: #d9d2c8;
   --accent: #1f6b45;
   --on-accent: #f4faf6;
   --code-bg: #241f1a;
@@ -26,12 +26,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #141311;
-    --bg-2: #221f1b;
-    --paper: #1c1b18;
-    --ink: #f4efe6;
-    --muted: #c8bfb2;
-    --line: #3a342c;
+    --bg: #141615;
+    --bg-2: #202522;
+    --paper: #1d211f;
+    --ink: #f5f1e9;
+    --muted: #c3c8c3;
+    --line: #3a413d;
     --accent: #9ed9bc;
     --on-accent: #10261c;
     --code-bg: #100e0c;
@@ -46,12 +46,12 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #141311;
-  --bg-2: #221f1b;
-  --paper: #1c1b18;
-  --ink: #f4efe6;
-  --muted: #c8bfb2;
-  --line: #3a342c;
+  --bg: #141615;
+  --bg-2: #202522;
+  --paper: #1d211f;
+  --ink: #f5f1e9;
+  --muted: #c3c8c3;
+  --line: #3a413d;
   --accent: #9ed9bc;
   --on-accent: #10261c;
   --code-bg: #100e0c;
@@ -170,6 +170,22 @@ input {
 
 .mast-progress a:hover {
   color: var(--ink);
+}
+
+.mast-anchor {
+  margin-right: 0.75rem;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mast-anchor:hover {
+  color: var(--accent);
+}
+
+.mast-short {
+  display: none;
 }
 
 button.nav-toggle {
@@ -320,9 +336,13 @@ main:focus {
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
   gap: 3rem;
   align-items: start;
+}
+
+.hero-copy {
+  padding: 1.25rem 0 0;
 }
 
 .kicker {
@@ -337,8 +357,8 @@ main:focus {
 h1,
 h2,
 .station h3,
-.rules h2,
-.shape h2 {
+.benefit-card h2,
+.learning-step h2 {
   font-family: var(--serif);
   font-weight: 560;
   letter-spacing: -0.03em;
@@ -371,6 +391,108 @@ h1 {
   flex-wrap: wrap;
   gap: 0.7rem;
   align-items: center;
+}
+
+.path-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 2.2rem 0 0;
+  padding: 0;
+}
+
+.path-facts div {
+  min-width: 7.3rem;
+  padding: 0 1rem;
+  border-left: 1px solid var(--line);
+}
+
+.path-facts div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.path-facts dt {
+  font-family: var(--serif);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.path-facts dd {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.journey-card {
+  padding: 1.25rem 1.2rem 1.1rem;
+  background: color-mix(in srgb, var(--paper) 92%, var(--level));
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.journey-head {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  margin: 0 0 0.2rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.journey-head h2 {
+  margin: 0;
+  font-size: 1.85rem;
+}
+
+.journey-count {
+  display: grid;
+  place-items: center;
+  min-width: 3.1rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.journey-copy {
+  margin: 0.8rem 0 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.journey-meter {
+  height: 0.42rem;
+  overflow: hidden;
+  margin: 1.15rem 0 0;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.journey-meter span {
+  display: block;
+  width: var(--p);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--level);
+}
+
+.journey-caption {
+  margin: 0.35rem 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .button,
@@ -423,7 +545,7 @@ h1 {
   display: grid;
   grid-template-columns: 4.4rem minmax(0, 1fr);
   gap: 0.85rem;
-  padding: 0.85rem 0;
+  padding: 0.68rem 0;
 }
 
 .station .num {
@@ -443,7 +565,7 @@ h1 {
 
 .station h3 {
   margin: 0;
-  font-size: 1.45rem;
+  font-size: 1.25rem;
 }
 
 .station h3 a {
@@ -458,6 +580,7 @@ h1 {
 .station p {
   margin: 0.25rem 0 0;
   color: var(--muted);
+  font-size: 0.94rem;
 }
 
 .station .state {
@@ -470,30 +593,68 @@ h1 {
   color: var(--hue, var(--muted));
 }
 
-.rules,
-.shape {
+.benefits,
+.learning-model {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  margin-top: 3.5rem;
+  gap: 1rem;
 }
 
-.rules article,
-.shape article {
-  border-top: 2px solid var(--ink);
-  padding-top: 0.85rem;
+.benefits {
+  margin-top: 3.25rem;
 }
 
-.rules h2,
-.shape h2 {
+.benefit-card,
+.learning-step {
+  min-width: 0;
+  padding: 1.1rem 1.15rem 1.2rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.mark {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-bottom: 0.85rem;
+  color: var(--accent);
+}
+
+.benefit-card h2,
+.learning-step h2 {
   margin: 0 0 0.4rem;
-  font-size: 1.55rem;
+  font-size: 1.45rem;
 }
 
-.rules p,
-.shape p {
+.benefit-card p,
+.learning-step p {
   margin: 0;
   color: var(--muted);
+}
+
+.learning-model {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--paper) 72%, var(--bg));
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+
+.learning-step {
+  box-shadow: none;
+  background: transparent;
+  border-color: transparent;
+}
+
+.step-num {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 500;
 }
 
 .measure {
@@ -876,6 +1037,14 @@ pre {
   padding: 0 0 0 3.9rem;
 }
 
+.lesson-sub li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+  padding: 0.15rem 0 0.45rem;
+}
+
 .lesson-sub a {
   color: var(--ink);
 }
@@ -948,6 +1117,30 @@ pre {
   margin: 0;
 }
 
+.colophon-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.8rem;
+  align-items: center;
+}
+
+.colophon .text-action {
+  flex: 1 0 100%;
+  width: fit-content;
+  background: none;
+  border: 0;
+  padding: 0.2rem 0;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.colophon .text-action:hover {
+  color: var(--ink);
+}
+
 .file-btn {
   position: relative;
   overflow: hidden;
@@ -1001,14 +1194,41 @@ pre {
     display: block;
   }
 
+  .mast-long {
+    display: none;
+  }
+
+  .mast-short {
+    display: inline;
+  }
+}
+
+@media (max-width: 800px) {
+  .mast-anchor {
+    display: none;
+  }
+
   .hero,
-  .rules,
-  .shape {
+  .benefits,
+  .learning-model {
     grid-template-columns: 1fr;
   }
 
-  .mast-progress {
-    display: none;
+  .home h1 {
+    font-size: clamp(2.15rem, 8vw, 2.7rem);
+  }
+
+  .home .lede {
+    margin-bottom: 0.9rem;
+    font-size: 1.08rem;
+  }
+
+  .home .hero-copy {
+    padding-top: 0;
+  }
+
+  .path-facts {
+    margin-top: 1.15rem;
   }
 }
 
@@ -1027,8 +1247,21 @@ pre {
     padding-left: 0;
   }
 
+  .lesson-sub li {
+    grid-template-columns: 1fr;
+  }
+
   .station {
     grid-template-columns: 3.4rem minmax(0, 1fr);
+  }
+
+  .hero-actions .button,
+  .hero-actions .quiet {
+    min-height: 2.75rem;
+  }
+
+  .hero-actions .button {
+    flex: 1 1 100%;
   }
 }
 

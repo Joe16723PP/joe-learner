@@ -254,11 +254,29 @@ function statusWord(lesson) {
   return "Not started";
 }
 
-function moduleStatus(mod) {
-  const done = mod.lessons.filter(isLessonComplete).length;
-  if (done === 0) return "none";
-  if (done === mod.lessons.length) return "done";
-  return "partial";
+function listStatus(lesson) {
+  const word = statusWord(lesson);
+  return word === "Not started" ? "" : word;
+}
+
+function groupStatus(lessons) {
+  if (!lessons.length) return "";
+  const done = lessons.filter(isLessonComplete).length;
+  const started = lessons.some((lesson) => listStatus(lesson));
+  if (done === lessons.length) return "Done";
+  if (done > 0 || started) return "In progress";
+  return "";
+}
+
+function lessonDot(lesson) {
+  if (isLessonComplete(lesson)) return "done";
+  if (listStatus(lesson)) return "partial";
+  return "";
+}
+
+function statusCell(badgeHtml, word) {
+  const text = [badgeHtml, word].filter(Boolean).join(" ");
+  return `<span class="status-word">${text}</span>`;
 }
 
 function focusLevel() {
@@ -395,6 +413,11 @@ function renderHome() {
   const resume = resumeLesson();
   const started = Object.values(state.checks).some((marks) => marks.some(Boolean));
   const resumeLabel = started ? `Resume ${levelById(resume.levelId).title}` : "Start at Beginner";
+  const totalLessons = LEVELS.reduce((total, level) => total + lessonsIn(level).length, 0);
+  const totalMust = LEVELS.reduce((total, level) => total + mustLessons(level).length, 0);
+  const active = LEVELS.find((level) => isLevelUnlocked(level) && !levelGateMet(level)) || LEVELS[LEVELS.length - 1];
+  const activeMust = mustLessons(active);
+  const activeDone = activeMust.filter(isLessonComplete).length;
   const stations = LEVELS.map((level) => {
     const open = isLevelUnlocked(level);
     const must = mustLessons(level);
@@ -417,43 +440,66 @@ function renderHome() {
 
   return `<div class="home">
     <section class="hero">
-      <div>
+      <div class="hero-copy">
         <p class="kicker">A teaching path</p>
         <h1>From first programs to technical leadership.</h1>
-        <p class="lede">Levels describe the work, not a job title. Each one assumes the previous outcomes are fluent, so later lessons do not re-teach them. The next level stays closed until the must-know exercises of this one are done. The path is a backend-leaning generalist path: programs, then team practice, then orders and a shared checkout.</p>
+        <p class="lede">A backend-leaning generalist path that starts with small programs, builds team practice, and grows toward owning systems, areas, and technical direction.</p>
         <div class="hero-actions">
           <a class="button" href="#/lesson/${encodeURIComponent(resume.id)}">${esc(resumeLabel)}</a>
           <a class="quiet" href="#how">How the levels fit</a>
         </div>
+        <dl class="path-facts" aria-label="Path at a glance">
+          <div><dt>${LEVELS.length}</dt><dd>levels</dd></div>
+          <div><dt>${totalLessons}</dt><dd>lessons</dd></div>
+          <div><dt>${totalMust}</dt><dd>must-know lessons</dd></div>
+        </dl>
       </div>
-      <ol class="path">${stations}</ol>
+      <aside class="journey-card" aria-labelledby="journey-title">
+        <div class="journey-head">
+          <div>
+            <p class="eyebrow">Your next step</p>
+            <h2 id="journey-title">${esc(active.title)}</h2>
+          </div>
+          <span class="journey-count">${activeDone}/${activeMust.length}</span>
+        </div>
+        <p class="journey-copy">${started ? "Keep building from the last exercise you recorded." : "Begin with one small program, then build toward larger systems."}</p>
+        <div class="journey-meter" aria-label="${esc(active.title)} must-know progress: ${activeDone} of ${activeMust.length}"><span style="--p:${activeMust.length ? Math.round((activeDone / activeMust.length) * 100) : 0}%"></span></div>
+        <p class="journey-caption">must-know exercises complete</p>
+        <ol class="path">${stations}</ol>
+      </aside>
     </section>
-    <section class="rules" id="how">
-      <article>
-        <h2>One path</h2>
-        <p>A learner is inside one level. Lessons from later levels stay off the path until the gate opens. Modules stay in the order written here.</p>
+    <section class="benefits" id="how">
+      <article class="benefit-card">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4v16M6 8h8M6 12h12M6 16h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h2>One clear path</h2>
+        <p>Stay inside one level at a time. Later lessons remain closed until the must-know outcomes are fluent.</p>
       </article>
-      <article>
+      <article class="benefit-card">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <h2>Must-know opens the gate</h2>
-        <p>Should-know work can wait. Skipping it does not lock the next level. Finishing means you can do the must-know outcomes.</p>
+        <p>Should-know work can wait. Skipping it does not lock the next level.</p>
       </article>
-      <article>
-        <h2>Show the work</h2>
-        <p>Each lesson is a concept, one worked example, and an exercise with a way to tell it is done. The check is yours, stored in this browser.</p>
+      <article class="benefit-card">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="5" width="16" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 9h16" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <h2>Progress stays yours</h2>
+        <p>Checks stay in this browser. The page does not inspect your programs or notes.</p>
       </article>
     </section>
-    <section class="shape">
-      <article>
+    <section class="learning-model" aria-label="How a lesson is built">
+      <article class="learning-step">
+        <span class="step-num" aria-hidden="true">01</span>
         <h2>Concept</h2>
-        <p>The idea in the words this level uses. A trace or a sequence appears when the idea is about change over time.</p>
+        <p>Understand the idea in the words this level uses.</p>
       </article>
-      <article>
+      <article class="learning-step">
+        <span class="step-num" aria-hidden="true">02</span>
         <h2>Worked example</h2>
-        <p>A small instance with a start, the steps, and an end. You can follow it without inventing the missing pieces.</p>
+        <p>Follow one small instance from start to end.</p>
       </article>
-      <article>
+      <article class="learning-step">
+        <span class="step-num" aria-hidden="true">03</span>
         <h2>Exercise</h2>
-        <p>One task you do with the example out of sight. The rubric is the definition of done: a result, a test, or a short written piece.</p>
+        <p>Work without the example and check the result.</p>
       </article>
     </section>
     ${colophon()}
@@ -536,22 +582,22 @@ function moduleList(modules, onlyTrack) {
           ? `<ul class="lesson-sub">${lessons
               .map((lesson) => {
                 const level = levelById(lesson.levelId);
-                return `<li><a href="#/lesson/${encodeURIComponent(lesson.id)}">${esc(lesson.title)}</a> ${badge(
-                  lesson.track,
-                  level,
-                  lesson,
-                )} <span class="status-word">${esc(statusWord(lesson))}</span></li>`;
+                const childBadge = onlyTrack ? "" : badge(lesson.track, level, lesson);
+                return `<li><a href="#/lesson/${encodeURIComponent(lesson.id)}">${esc(lesson.title)}</a>${statusCell(
+                  childBadge,
+                  esc(listStatus(lesson)),
+                )}</li>`;
               })
               .join("")}</ul>`
           : "";
       const primary = lessons.length === 1 ? lessons[0] : null;
       const href = primary ? `#/lesson/${encodeURIComponent(primary.id)}` : `#/module/${encodeURIComponent(mod.id)}`;
-      const mark = primary ? statusWord(primary) : moduleStatus(mod) === "done" ? "Done" : moduleStatus(mod) === "partial" ? "In progress" : "Not started";
+      const mark = primary ? listStatus(primary) : groupStatus(lessons);
       const level = levelById(mod.levelId);
-      const trackBadge = primary ? badge(primary.track, level, primary) : "";
+      const trackBadge = primary && !onlyTrack ? badge(primary.track, level, primary) : "";
       return `<li><a class="mod" href="${href}"><span class="mod-id">${esc(mod.id)}</span><span><strong>${esc(
         mod.title,
-      )}</strong><small>${esc(mod.summary)}</small></span><span class="status-word">${trackBadge} ${esc(mark)}</span></a>${extra}</li>`;
+      )}</strong><small>${esc(mod.summary)}</small></span>${statusCell(trackBadge, esc(mark))}</a>${extra}</li>`;
     })
     .join("");
   return `<ol class="module-list">${items}</ol>`;
@@ -565,11 +611,10 @@ function renderModule(mod) {
     .map(
       (lesson) => `<li><a class="mod" href="#/lesson/${encodeURIComponent(lesson.id)}"><span class="mod-id">${esc(
         lesson.id,
-      )}</span><span><strong>${esc(lesson.title)}</strong></span><span class="status-word">${badge(
-        lesson.track,
-        level,
-        lesson,
-      )} ${esc(statusWord(lesson))}</span></a></li>`,
+      )}</span><span><strong>${esc(lesson.title)}</strong></span>${statusCell(
+        badge(lesson.track, level, lesson),
+        esc(listStatus(lesson)),
+      )}</a></li>`,
     )
     .join("");
   return `<article class="module measure">
@@ -750,11 +795,13 @@ function colophon() {
   const themeLabel = state.theme === "system" ? "Theme: system" : state.theme === "dark" ? "Theme: dark" : "Theme: light";
   return `<footer class="colophon">
     <p>Edition 2. Progress stays in this browser. Python is only in Beginner examples. After that, the tools are Git, HTTP, and SQL.</p>
-    <button type="button" class="quiet small" data-action="theme">${themeLabel}</button>
-    <button type="button" class="quiet small" data-action="preview" aria-pressed="${state.preview ? "true" : "false"}">${previewLabel}</button>
-    <button type="button" class="quiet small" data-action="export">Export progress</button>
-    <label class="quiet small file-btn">Import progress<input data-import type="file" accept="application/json,.json"></label>
-    <button type="button" class="quiet small" data-action="reset">Clear progress</button>
+    <div class="colophon-tools">
+      <button type="button" class="quiet small" data-action="theme">${themeLabel}</button>
+      <button type="button" class="quiet small" data-action="preview" aria-pressed="${state.preview ? "true" : "false"}">${previewLabel}</button>
+      <button type="button" class="quiet small" data-action="export">Export progress</button>
+      <label class="quiet small file-btn">Import progress<input data-import type="file" accept="application/json,.json"></label>
+    </div>
+    <button type="button" class="text-action" data-action="reset">Clear progress</button>
   </footer>`;
 }
 
@@ -763,10 +810,14 @@ function mast(route) {
   const must = mustLessons(level);
   const done = must.filter(isLessonComplete).length;
   const showNav = route.name !== "home";
+  const full = `${level.title} · ${done} of ${must.length}`;
+  const short = `${done}/${must.length}`;
+  const homeAnchor = route.name === "home" ? `<a class="mast-anchor" href="#how">How the levels fit</a>` : "";
   return `<header class="mast">
     <a class="brand" href="#/">Joe Learner</a>
     <div class="mast-actions">
-      <p class="mast-progress"><a href="#/level/${level.id}">${esc(level.title)} · ${done} of ${must.length}</a></p>
+      ${homeAnchor}
+      <p class="mast-progress"><a href="#/level/${level.id}" aria-label="${esc(level.title)}, ${done} of ${must.length} must-know"><span class="mast-long">${esc(full)}</span><span class="mast-short">${esc(short)}</span></a></p>
       ${showNav ? `<button type="button" class="quiet small nav-toggle" data-action="nav" aria-expanded="${session.navOpen ? "true" : "false"}">Modules</button>` : ""}
     </div>
   </header>`;
@@ -799,22 +850,23 @@ function renderRail(route) {
         const current = route.name === "lesson" && route.id === lesson.id;
         return `<li><a class="lesson-link" href="#/lesson/${encodeURIComponent(lesson.id)}" ${
           current ? 'aria-current="page"' : ""
-        }><span class="dot ${isLessonComplete(lesson) ? "done" : ""}"></span><span><small>${esc(
+        }><span class="dot ${lessonDot(lesson)}"></span><span><small>${esc(
           mod.id,
         )}</small><br>${esc(lesson.title)}</span></a></li>`;
       }
       const subs = mod.lessons
         .map((lesson) => {
           const current = route.name === "lesson" && route.id === lesson.id;
-          const dot = isLessonComplete(lesson) ? "done" : "";
           return `<li><a class="lesson-link" href="#/lesson/${encodeURIComponent(lesson.id)}" ${
             current ? 'aria-current="page"' : ""
-          }><span class="dot ${dot}"></span><span>${esc(lesson.title)}</span></a></li>`;
+          }><span class="dot ${lessonDot(lesson)}"></span><span>${esc(lesson.title)}</span></a></li>`;
         })
         .join("");
-      return `<li><a class="lesson-link" href="#/module/${encodeURIComponent(mod.id)}"><span class="dot ${
-        moduleStatus(mod) === "done" ? "done" : moduleStatus(mod) === "partial" ? "partial" : ""
-      }"></span><span><small>${esc(mod.id)}</small><br>${esc(mod.title)}</span></a><ol class="sub">${subs}</ol></li>`;
+      const dots = mod.lessons.map(lessonDot);
+      const moduleDot = dots.every((dot) => dot === "done") ? "done" : dots.some(Boolean) ? "partial" : "";
+      return `<li><a class="lesson-link" href="#/module/${encodeURIComponent(mod.id)}"><span class="dot ${moduleDot}"></span><span><small>${esc(
+        mod.id,
+      )}</small><br>${esc(mod.title)}</span></a><ol class="sub">${subs}</ol></li>`;
     })
     .join("");
   return `<nav class="rail ${session.navOpen ? "is-open" : ""}" aria-label="Path"><div class="rail-levels">${links}</div><h2>${esc(
@@ -866,6 +918,19 @@ function render(options = {}) {
       const el = document.getElementById(focusId);
       if (el) el.focus();
     }
+  }
+  revealCurrentLesson();
+}
+
+function revealCurrentLesson() {
+  const rail = document.querySelector(".rail");
+  if (!rail || getComputedStyle(rail).display === "none") return;
+  const current = rail.querySelector('a.lesson-link[aria-current="page"]');
+  if (!current) return;
+  const railRect = rail.getBoundingClientRect();
+  const curRect = current.getBoundingClientRect();
+  if (curRect.top < railRect.top + 4 || curRect.bottom > railRect.bottom - 4) {
+    rail.scrollTop += curRect.top - railRect.top - 12;
   }
 }
 
